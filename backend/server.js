@@ -72,9 +72,15 @@ app.get('/health', (req, res) => {
     2: 'Connecting',
     3: 'Disconnecting'
   };
+  
+  // Mask URI for safety
+  const rawUri = process.env.MONGODB_URI || 'MISSING';
+  const maskedUri = rawUri.length > 20 ? `${rawUri.substring(0, 15)}...` : 'INVALID';
+
   res.status(200).json({ 
     status: 'OK', 
     database: statusMap[dbStatus] || 'Unknown',
+    uri_check: maskedUri,
     timestamp: new Date().toISOString()
   });
 });
