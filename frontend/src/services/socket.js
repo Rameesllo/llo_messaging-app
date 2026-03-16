@@ -4,7 +4,8 @@ let socket;
 
 export const initiateSocket = (userId) => {
   if (!socket) {
-    const BACKEND_URL = `http://${window.location.hostname}:5000`;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const BACKEND_URL = isLocal ? `http://${window.location.hostname}:5000` : window.location.origin;
     socket = io(BACKEND_URL);
   }
   

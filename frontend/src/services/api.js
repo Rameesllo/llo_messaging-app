@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API = axios.create({
-  baseURL: `http://${window.location.hostname}:5000/api`
+  baseURL: isLocal ? `http://${window.location.hostname}:5000/api` : `${window.location.origin}/api`
 });
 
 API.interceptors.request.use((config) => {
