@@ -38,13 +38,13 @@ app.use('/api/groups', require('./routes/groupRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected successfully'))
+mongoose.connect(process.env.MONGODB_URI, {
+  serverSelectionTimeoutMS: 10000, // Timeout after 10s instead of default 30s
+})
+  .then(() => console.log('✅ MongoDB connected successfully'))
   .catch(err => {
-    console.error('MongoDB connection error details:');
-    console.error('Error Code:', err.code);
-    console.error('Error Message:', err.message);
-    console.error('Full Error:', err);
+    console.error('❌ MongoDB connection error:');
+    console.error('Message:', err.message);
   });
 
 // Socket.io setup
@@ -52,7 +52,18 @@ const socketHandler = require('./sockets/socketHandler');
 socketHandler(io);
 
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
+  const dbStatus = mongoose.connection.readyState;
+  const statusMap = {
+    0: 'Disconnected',
+    1: 'Connected',
+    2: 'Connecting',
+    3: 'Disconnecting'
+  };
+  res.status(200).json({ 
+    status: 'OK', 
+    database: statusMap[dbStatus] || 'Unknown',
+    timestamp: new Date().toISOString()
+  });
 });
 
 const PORT = process.env.PORT || 5000;
