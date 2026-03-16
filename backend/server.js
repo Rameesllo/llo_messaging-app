@@ -38,14 +38,27 @@ app.use('/api/groups', require('./routes/groupRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  serverSelectionTimeoutMS: 10000, // Timeout after 10s instead of default 30s
-})
-  .then(() => console.log('✅ MongoDB connected successfully'))
-  .catch(err => {
-    console.error('❌ MongoDB connection error:');
-    console.error('Message:', err.message);
-  });
+const connectDB = async () => {
+  try {
+    console.log('🔄 Attempting to connect to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+    });
+    console.log('✅ MongoDB connected successfully');
+  } catch (err) {
+    console.error('❌ MongoDB Connection Error:', err.name, err.message);
+    if (err.message.includes('buffering timed out')) {
+      console.error('👉 Tip: Check your IP Whitelist in Atlas (0.0.0.0/0).');
+    }
+  }
+};
+
+connectDB();
+
+// Monitor connection events
+mongoose.connection.on('error', err => console.error('🔴 Mongoose connection error:', err));
+mongoose.connection.on('disconnected', () => console.warn('🟡 Mongoose disconnected'));
 
 // Socket.io setup
 const socketHandler = require('./sockets/socketHandler');
