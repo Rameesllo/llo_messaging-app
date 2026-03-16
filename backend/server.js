@@ -73,14 +73,22 @@ app.get('/health', (req, res) => {
     3: 'Disconnecting'
   };
   
-  // Mask URI for safety
-  const rawUri = process.env.MONGODB_URI || 'MISSING';
-  const maskedUri = rawUri.length > 20 ? `${rawUri.substring(0, 15)}...` : 'INVALID';
+  // Mask URI for safety and clear diagnostic
+  const rawUri = process.env.MONGODB_URI;
+  let uriStatus = 'NOT FOUND (Check Vercel Settings)';
+  
+  if (rawUri) {
+    if (rawUri.length > 10) {
+      uriStatus = `FOUND (${rawUri.substring(0, 8)}...)`;
+    } else {
+      uriStatus = `FOUND BUT TOO SHORT (${rawUri})`;
+    }
+  }
 
   res.status(200).json({ 
     status: 'OK', 
     database: statusMap[dbStatus] || 'Unknown',
-    uri_check: maskedUri,
+    uri_check: uriStatus,
     timestamp: new Date().toISOString()
   });
 });
