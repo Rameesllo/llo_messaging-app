@@ -11,18 +11,25 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "backend/server.js"
+      "src": "/health",
+      "dest": "/backend/server.js"
     },
     {
-      "source": "/(assets|icons|favicon.png|manifest.json|sw.js)(.*)",
-      "destination": "/frontend/$1$2"
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/frontend/index.html"
+      "src": "/(assets|icons|favicon.png|manifest.json|sw.js)(.*)",
+      "dest": "/frontend/$1$2"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
     }
   ]
 }
