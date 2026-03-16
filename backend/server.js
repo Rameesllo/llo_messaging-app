@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+const rateLimit = require('express-rate-limit');
+
 dotenv.config();
 
 const app = express();
@@ -16,14 +18,27 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rate Limiting: 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
+  message: { message: 'Too many requests from this IP, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/', limiter);
+
 const io = new Server(server, {
   cors: {
-    origin: "*", // Adjust for production
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"],
     methods: ["GET", "POST"]
   }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"],
+  credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
