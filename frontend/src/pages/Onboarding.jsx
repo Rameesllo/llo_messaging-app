@@ -75,7 +75,7 @@ const Onboarding = ({ user, setUser }) => {
         </div>
 
         <div className="brand-logo-container">
-          <img src="/src/assets/logo.png" alt="LLO Logo" className="app-logo-large" />
+          <img src="/favicon.png" alt="LLO Logo" className="app-logo-large" />
         </div>
 
         {error && (

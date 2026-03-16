@@ -34,7 +34,7 @@ const Register = ({ setUser }) => {
       <div className="glass-card">
         {/* Brand Icon */}
         <div className="brand-logo-container">
-          <img src="/src/assets/logo.png" alt="LLO Logo" className="app-logo-large" />
+          <img src="/favicon.png" alt="LLO Logo" className="app-logo-large" />
         </div>
 
         <h1 style={{ 

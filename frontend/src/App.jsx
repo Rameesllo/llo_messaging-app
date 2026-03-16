@@ -28,7 +28,7 @@ function App() {
 
   if (loading) return (
     <div className="loading-screen">
-      <img src="/src/assets/logo.png" alt="LLO Logo" className="loading-logo" />
+      <img src="/favicon.png" alt="LLO Logo" className="loading-logo" />
       <div className="loading-bar-container">
         <div className="loading-bar-fill"></div>
       </div>

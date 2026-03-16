@@ -118,7 +118,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
             border: '1px solid rgba(255,255,255,0.1)'
           }}>
             <div className="llo-icon-container" style={{ opacity: 0.5 }}>
-              <img src="/src/assets/logo.png" alt="LLO" className="llo-icon" />
+              <img src="/favicon.png" alt="LLO" className="llo-icon" />
             </div>
             <div className="llo-text">
               <div className="llo-label" style={{ opacity: 0.7 }}>Sent LLO {message.mediaType}</div>
@@ -165,7 +165,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/src/assets/logo.png" alt="LLO" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
+                <img src="/favicon.png" alt="LLO" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontWeight: '800', fontSize: '15px', letterSpacing: '0.5px' }}>LLO {message.mediaType.toUpperCase()}</span>
