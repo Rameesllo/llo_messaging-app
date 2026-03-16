@@ -14,14 +14,15 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/server.js"
+      "dest": "backend/server.js"
     },
     {
-      "handle": "filesystem"
+      "src": "/(assets|icons|favicon.png|manifest.json|sw.js)(.*)",
+      "dest": "/frontend/$1$2"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/frontend/index.html"
     }
   ]
 }
