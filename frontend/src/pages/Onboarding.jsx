@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
-import { Ghost, Calendar, Users, ChevronRight, Check } from 'lucide-react';
+import { Calendar, ChevronRight, Check, Mars, Venus, UserCircle, ArrowLeft } from 'lucide-react';
 
 const Onboarding = ({ user, setUser }) => {
   const [step, setStep] = useState(1);
@@ -14,15 +14,8 @@ const Onboarding = ({ user, setUser }) => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    console.log('Onboarding step:', step, 'Data:', formData);
-    if (step === 1 && !formData.dateOfBirth) {
-      console.warn('Birthday missing');
-      return;
-    }
-    if (step === 2 && !formData.gender) {
-      console.warn('Gender missing');
-      return;
-    }
+    if (step === 1 && !formData.dateOfBirth) return;
+    if (step === 2 && !formData.gender) return;
     
     if (step < 2) {
       setStep(step + 1);
@@ -34,13 +27,11 @@ const Onboarding = ({ user, setUser }) => {
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
-    console.log('Submitting onboarding...', formData);
     try {
       const res = await userAPI.updateProfile({
         ...formData,
         onboardingCompleted: true
       });
-      console.log('Onboarding success:', res.data);
       setUser(res.data.user);
       navigate('/');
     } catch (err) {
@@ -51,103 +42,132 @@ const Onboarding = ({ user, setUser }) => {
     }
   };
 
-  const categories = ['Male', 'Female', 'Other', 'Prefer not to say'];
+  const categories = [
+    { label: 'Male', icon: <Mars size={24} />, color: '#0ea5e9' },
+    { label: 'Female', icon: <Venus size={24} />, color: '#f472b6' },
+    { label: 'Other', icon: <UserCircle size={24} />, color: '#94a3b8' },
+    { label: 'Skip', icon: <Check size={24} />, color: '#64748b' }
+  ];
 
   return (
-    <div className="auth-container" style={{ background: '#FFFC00' }}>
-      <div className="glass-card" style={{ 
-        background: 'white', 
-        color: 'black', 
-        borderRadius: '32px',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
-      }}>
-        {/* Step Indicator */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', justifyContent: 'center' }}>
-          {[1, 2].map(s => (
-            <div key={s} style={{ 
-              width: '40px', 
-              height: '4px', 
-              borderRadius: '2px',
-              background: s <= step ? '#000' : '#e2e8f0',
-              transition: 'all 0.3s'
-            }} />
-          ))}
+    <div className="auth-container">
+      <div className="glass-card" style={{ maxWidth: '480px' }}>
+        {/* Header with Back Button and Progress */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+          {step > 1 ? (
+            <button 
+              onClick={() => setStep(step - 1)} 
+              className="icon-btn"
+              style={{ padding: '4px', background: 'rgba(255,255,255,0.05)' }}
+            >
+              <ArrowLeft size={20} />
+            </button>
+          ) : <div style={{ width: '28px' }} />}
+          
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[1, 2].map(s => (
+              <div key={s} style={{ 
+                width: '40px', 
+                height: '4px', 
+                borderRadius: '2px',
+                background: s <= step ? 'var(--sky-500)' : 'rgba(255,255,255,0.1)',
+                transition: 'all 0.3s'
+              }} />
+            ))}
+          </div>
+          
+          <div style={{ width: '28px' }} />
         </div>
 
-        <div className="brand-logo-container">
-          <img src="/favicon.png" alt="LLO Logo" className="app-logo-large" />
+        <div className="brand-logo-container" style={{ marginBottom: '40px' }}>
+          <img src="/favicon.png" alt="LLO Logo" className="app-logo" style={{ width: '80px', height: '80px' }} />
         </div>
 
         {error && (
           <div style={{ 
-            background: '#fee2e2', 
-            color: '#dc2626', 
+            background: 'rgba(239, 68, 68, 0.1)', 
+            color: '#f87171', 
             padding: '12px', 
             borderRadius: '12px', 
             marginBottom: '20px',
             fontSize: '14px',
             textAlign: 'center',
-            fontWeight: '600',
-            border: '1px solid #fecaca'
+            border: '1px solid rgba(239, 68, 68, 0.2)'
           }}>
             {error}
           </div>
         )}
 
         {step === 1 && (
-          <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '12px', textAlign: 'center' }}>When's your birthday?</h1>
-            <p style={{ color: '#64748b', textAlign: 'center', marginBottom: '32px' }}>This helps us provide the right experience.</p>
+          <div style={{ animation: 'stepEnter 0.4s ease-out' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '12px', textAlign: 'center', color: 'var(--text-primary)' }}>
+              When's your birthday? 🎂
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '40px', fontSize: '15px' }}>
+              We'll use this to show your age on your profile.
+            </p>
             
-            <div style={{ position: 'relative', marginBottom: '40px' }}>
-              <Calendar style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} size={20} />
-              <input 
-                type="date" 
-                value={formData.dateOfBirth}
-                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '16px 16px 16px 52px',
-                  borderRadius: '16px',
-                  border: '2px solid #f1f5f9',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  outline: 'none',
-                  background: '#f8fafc'
-                }}
-              />
+            <div className="form-group" style={{ marginBottom: '40px' }}>
+              <label className="form-label">Date of Birth</label>
+              <div style={{ position: 'relative' }}>
+                <Calendar style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
+                <input 
+                  type="date" 
+                  className="form-input"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  style={{ paddingLeft: '52px', fontSize: '16px' }}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '12px', textAlign: 'center' }}>What's your gender?</h1>
-            <p style={{ color: '#64748b', textAlign: 'center', marginBottom: '32px' }}>Choose how you'd like to be identified.</p>
+          <div style={{ animation: 'stepEnter 0.4s ease-out' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '12px', textAlign: 'center', color: 'var(--text-primary)' }}>
+              What's your gender? ✨
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '40px', fontSize: '15px' }}>
+              Pick what best describes you.
+            </p>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginBottom: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {categories.map(cat => (
                 <button
-                  key={cat}
-                  onClick={() => setFormData({ ...formData, gender: cat })}
+                  key={cat.label}
+                  onClick={() => setFormData({ ...formData, gender: cat.label })}
+                  className="gender-option-btn"
                   style={{
-                    padding: '16px',
-                    borderRadius: '16px',
+                    padding: '24px 16px',
+                    borderRadius: '20px',
                     border: '2px solid',
-                    borderColor: formData.gender === cat ? '#0ea5e9' : '#f1f5f9',
-                    background: formData.gender === cat ? '#f0f9ff' : 'white',
-                    color: formData.gender === cat ? '#0369a1' : '#1e293b',
+                    borderColor: formData.gender === cat.label ? cat.color : 'rgba(255, 255, 255, 0.05)',
+                    background: formData.gender === cat.label ? `${cat.color}20` : 'rgba(255, 255, 255, 0.03)',
+                    color: formData.gender === cat.label ? 'white' : 'var(--text-secondary)',
                     fontWeight: '700',
-                    fontSize: '16px',
                     cursor: 'pointer',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    transition: 'all 0.2s'
+                    gap: '12px',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
                 >
-                  {cat}
-                  {formData.gender === cat && <Check size={20} />}
+                  <div style={{ 
+                    color: formData.gender === cat.label ? cat.color : 'var(--text-muted)',
+                    transition: 'all 0.2s'
+                  }}>
+                    {cat.icon}
+                  </div>
+                  <span style={{ fontSize: '14px' }}>{cat.label}</span>
+                  {formData.gender === cat.label && (
+                    <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
+                      <Check size={16} />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -157,33 +177,38 @@ const Onboarding = ({ user, setUser }) => {
         <button
           disabled={loading || (step === 1 && !formData.dateOfBirth) || (step === 2 && !formData.gender)}
           onClick={handleNext}
+          className="btn btn-primary"
           style={{
-            width: '100%',
             padding: '18px',
             borderRadius: '20px',
-            background: '#000',
-            color: 'white',
             fontSize: '16px',
-            fontWeight: '800',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'all 0.2s',
-            opacity: (loading || (step === 1 && !formData.dateOfBirth) || (step === 2 && !formData.gender)) ? 0.5 : 1
+            boxShadow: '0 8px 25px rgba(14, 165, 233, 0.25)',
+            opacity: (loading || (step === 1 && !formData.dateOfBirth) || (step === 2 && !formData.gender)) ? 0.3 : 1
           }}
         >
-          {loading ? 'Setting up...' : (step === 2 ? 'Finish' : 'Continue')}
-          {!loading && <ChevronRight size={20} />}
+          {loading ? (
+            <div className="loading-spinner" style={{ width: '20px', height: '20px', borderWidth: '3px' }}></div>
+          ) : (
+            <>
+              {step === 2 ? 'Let\'s Go!' : 'Continue'}
+              <ChevronRight size={20} />
+            </>
+          )}
         </button>
       </div>
 
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes stepEnter {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .gender-option-btn:hover {
+          background: rgba(255, 255, 255, 0.08) !important;
+          transform: translateY(-2px);
+          border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        .gender-option-btn:active {
+          transform: scale(0.95);
         }
       `}</style>
     </div>

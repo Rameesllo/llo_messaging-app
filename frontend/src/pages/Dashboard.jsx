@@ -3,11 +3,14 @@ import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import ProfileView from '../components/ProfileView';
 import AddFriendModal from '../components/AddFriendModal';
+import DiscoverUsers from '../components/DiscoverUsers';
 import PendingRequestsModal from '../components/PendingRequestsModal';
 import CreateGroupModal from '../components/CreateGroupModal';
 import CallOverlay from '../components/CallOverlay';
 import { authAPI, messageAPI, userAPI, mediaAPI, friendAPI, groupAPI } from '../services/api';
 import { initiateSocket, subscribeToMessages, sendMessageSocket, subscribeToStatus, subscribeToTyping, subscribeToReactions, subscribeToDelete, subscribeToIncomingCall, subscribeToMessageStatus, emitMessageRead, emitMessageDelivered } from '../services/socket';
+
+console.log('API Service debug - friendAPI keys:', Object.keys(friendAPI));
 
 const Dashboard = ({ user, setUser }) => {
   const [activeChat, setActiveChat] = useState(null);
@@ -16,9 +19,11 @@ const Dashboard = ({ user, setUser }) => {
   const [messages, setMessages] = useState([]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
+  const [isDiscoverOpen, setIsDiscoverOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [discoverUsers, setDiscoverUsers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [activeCall, setActiveCall] = useState(null);
@@ -39,6 +44,7 @@ const Dashboard = ({ user, setUser }) => {
     fetchConversations();
     fetchFriends();
     fetchGroups();
+    fetchDiscoverUsers();
 
     const unsubMessages = subscribeToMessages(async (err, msg) => {
       if (msg) {
@@ -221,6 +227,15 @@ const Dashboard = ({ user, setUser }) => {
       setPendingCount(res.data.length);
     } catch (err) {
       console.error('Failed to fetch pending requests', err);
+    }
+  };
+
+  const fetchDiscoverUsers = async () => {
+    try {
+      const res = await friendAPI.discover();
+      setDiscoverUsers(res.data);
+    } catch (err) {
+      console.error('Failed to fetch discover users', err);
     }
   };
 
@@ -455,9 +470,16 @@ const Dashboard = ({ user, setUser }) => {
           onLogout={handleLogout}
           onOpenProfile={() => setIsProfileOpen(true)}
           onOpenAddFriend={() => setIsAddFriendOpen(true)}
+          onOpenDiscover={() => setIsDiscoverOpen(true)}
           onOpenRequests={() => setIsRequestsOpen(true)}
           onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
           groups={groups}
+          discoverUsers={discoverUsers}
+          onSendRequest={async (userId) => {
+            await friendAPI.sendRequest(userId);
+            fetchPendingCount();
+            fetchDiscoverUsers();
+          }}
         />
       </div>
       
@@ -492,6 +514,13 @@ const Dashboard = ({ user, setUser }) => {
         <AddFriendModal 
           onClose={() => setIsAddFriendOpen(false)} 
           onOpenMutual={handleOpenMutual}
+        />
+      )}
+
+      {isDiscoverOpen && (
+        <DiscoverUsers 
+          onClose={() => setIsDiscoverOpen(false)}
+          onSendRequest={() => fetchPendingCount()}
         />
       )}
 

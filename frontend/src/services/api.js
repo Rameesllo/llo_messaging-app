@@ -8,9 +8,23 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.set('Authorization', `Bearer ${token}`);
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+API.interceptors.response.use((response) => {
+  return response;
+}, (error) => {
+  if (error.response && error.response.status === 401) {
+    console.warn('Unauthorized request detected. Clearing token...');
+    localStorage.removeItem('token');
+    // Optional: reload to trigger App.jsx re-auth check
+    // window.location.reload(); 
+  }
+  return Promise.reject(error);
 });
 
 export const authAPI = {
@@ -30,7 +44,8 @@ export const friendAPI = {
   search: (query) => API.get(`/friends/search?query=${query}`),
   sendRequest: (receiverId) => API.post('/friends/request', { receiverId }),
   acceptRequest: (requestId) => API.post('/friends/accept', { requestId }),
-  getPending: () => API.get('/friends/pending')
+  getPending: () => API.get('/friends/pending'),
+  discover: () => API.get('/friends/discover')
 };
 
 export const messageAPI = {
@@ -57,5 +72,10 @@ export const mediaAPI = {
 export const aiAPI = {
   generate: (prompt) => API.post('/ai/generate', { prompt })
 };
+
+// Debug helper
+if (typeof window !== 'undefined') {
+  window.friendAPI = friendAPI;
+}
 
 export default API;
