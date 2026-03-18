@@ -10,7 +10,17 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
   useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log('beforeinstallprompt event fired');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -24,7 +34,19 @@ function App() {
       setLoading(false);
     };
     checkAuth();
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
+  const installApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+  };
 
   if (loading) return (
     <div className="loading-screen">
@@ -43,7 +65,7 @@ function App() {
         <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" />} />
         <Route path="/register" element={!user ? <Register setUser={setUser} /> : <Navigate to="/onboarding" />} />
         <Route path="/onboarding" element={user ? <Onboarding user={user} setUser={setUser} /> : <Navigate to="/login" />} />
-        <Route path="/" element={user ? <Dashboard user={user} setUser={setUser} /> : <Navigate to="/login" />} />
+        <Route path="/" element={user ? <Dashboard user={user} setUser={setUser} canInstall={!!deferredPrompt} onInstall={installApp} /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );

@@ -12,7 +12,7 @@ import { initiateSocket, subscribeToMessages, sendMessageSocket, subscribeToStat
 
 console.log('API Service debug - friendAPI keys:', Object.keys(friendAPI));
 
-const Dashboard = ({ user, setUser }) => {
+const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   const [activeChat, setActiveChat] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -480,6 +480,8 @@ const Dashboard = ({ user, setUser }) => {
             fetchPendingCount();
             fetchDiscoverUsers();
           }}
+          canInstall={canInstall}
+          onInstall={onInstall}
         />
       </div>
       

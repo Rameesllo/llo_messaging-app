@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Search, User, LogOut, MessageSquare, Plus, Send, ArrowRight, UserPlus, Bell, Moon, Sun, Users, Compass, Mars, Venus, Calendar } from 'lucide-react';
+import { Search, User, LogOut, MessageSquare, Plus, Send, ArrowRight, UserPlus, Bell, Moon, Sun, Users, Compass, Mars, Venus, Calendar, Download } from 'lucide-react';
 import { userAPI } from '../services/api';
 
-const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSelectChat, onSearchSelect, onOpenMutual, onLogout, onOpenProfile, onOpenAddFriend, onOpenRequests, onOpenCreateGroup, onOpenDiscover, discoverUsers = [], onSendRequest }) => {
+const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSelectChat, onSearchSelect, onOpenMutual, onLogout, onOpenProfile, onOpenAddFriend, onOpenRequests, onOpenCreateGroup, onOpenDiscover, discoverUsers = [], onSendRequest, canInstall, onInstall }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -201,7 +201,31 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
         )}
       </div>
 
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(15, 23, 42, 0.4)' }}>
+      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {canInstall && (
+          <button 
+            onClick={onInstall} 
+            className="sidebar-footer-btn" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              padding: '10px 16px', 
+              borderRadius: '12px', 
+              width: '100%', 
+              color: 'var(--sky-500)', 
+              background: 'rgba(14, 165, 233, 0.1)', 
+              border: 'none', 
+              cursor: 'pointer', 
+              fontWeight: '600', 
+              fontSize: '14px',
+              marginBottom: '4px'
+            }}
+          >
+            <Download size={20} />
+            <span>Install App</span>
+          </button>
+        )}
         <button onClick={onLogout} className="sidebar-footer-btn" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '12px', width: '100%', color: '#ef4444', background: 'rgba(239, 68, 68, 0.05)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
           <LogOut size={20} />
           <span>Logout</span>
