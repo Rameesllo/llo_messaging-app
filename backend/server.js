@@ -48,6 +48,11 @@ app.use('/api/ai', require('./routes/aiRoutes'));
 const connectDB = async () => {
   try {
     console.log('🔄 Attempting to connect to MongoDB...');
+    if (!process.env.MONGODB_URI) {
+      console.error('❌ CRITICAL ERROR: MONGODB_URI is undefined in process.env!');
+      console.error('👉 Fix: Go to Railway Variables tab and add MONGODB_URI');
+      return;
+    }
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 10000,
