@@ -82,10 +82,14 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     const userObj = user.toObject();
     userObj.id = userObj._id.toString();
     res.json(userObj);
   } catch (err) {
+    console.error('getMe error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
