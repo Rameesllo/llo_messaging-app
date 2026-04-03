@@ -21,7 +21,7 @@ services:
         sync: false
 
   # Frontend Vite Service (Static Site)
-  - type: static
+  - type: web
     name: messenger-frontend
     runtime: static
     rootDir: frontend
