@@ -30,7 +30,7 @@ services:
         fromService:
           type: web
           name: messenger-backend
-          property: host
+          property: url
     routes:
       - type: rewrite
         source: /*
