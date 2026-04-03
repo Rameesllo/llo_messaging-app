@@ -1,7 +1,12 @@
 import axios from 'axios';
 
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = import.meta.env.VITE_API_URL || (isLocal ? `http://${window.location.hostname}:5000` : window.location.origin);
+let API_URL = import.meta.env.VITE_API_URL || (isLocal ? `http://${window.location.hostname}:5000` : window.location.origin);
+
+// Fix: Prepend https:// if protocol is missing (Render's 'host' property doesn't include it)
+if (API_URL && !API_URL.startsWith('http')) {
+  API_URL = `https://${API_URL}`;
+}
 
 const API = axios.create({
   baseURL: `${API_URL}/api`
