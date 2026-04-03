@@ -21,11 +21,12 @@ services:
         sync: false
 
   # Frontend Vite Service (Static Site)
-  - type: static_site
+  - type: web
     name: messenger-frontend
+    env: static
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishPath: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         fromService:
