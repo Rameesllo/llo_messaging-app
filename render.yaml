@@ -3,7 +3,7 @@ services:
   - type: web
     name: messenger-backend
     runtime: node
-    rootDir: backend
+    rootDirectory: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -24,7 +24,7 @@ services:
   - type: web
     name: messenger-frontend
     env: static
-    rootDir: frontend
+    rootDirectory: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
