@@ -3,9 +3,8 @@ services:
   - type: web
     name: messenger-backend
     runtime: node
-    rootDirectory: backend
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: PORT
         value: 5000
@@ -24,9 +23,8 @@ services:
   - type: web
     name: messenger-frontend
     env: static
-    rootDirectory: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
         fromService:
