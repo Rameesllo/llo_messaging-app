@@ -27,6 +27,7 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   const [groups, setGroups] = useState([]);
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [activeCall, setActiveCall] = useState(null);
+  const [toast, setToast] = useState(null);
   const activeChatRef = useRef(null);
 
   useEffect(() => {
@@ -353,11 +354,25 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   };
 
   const showNotification = (msg) => {
+    // 1. System notification if tab is hidden
     if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
       const title = msg.senderUsername || 'New Message';
       const body = msg.mediaType ? `Sent a ${msg.mediaType}` : msg.text;
-      new Notification(title, { body, icon: '/src/assets/logo.png' });
-    }
+      new Notification(title, { body, icon: '/favicon.ico' });
+    } 
+    
+    // 2. Always show in-app toast if it's from a background chat (regardless of visibility)
+    setToast({
+      title: msg.senderUsername || 'New Message',
+      message: msg.mediaType ? `Sent a ${msg.mediaType}` : msg.text,
+      senderId: msg.senderId,
+      groupId: msg.groupId
+    });
+
+    // Auto-dismiss toast
+    setTimeout(() => {
+      setToast(null);
+    }, 5000);
   };
 
   const playSentSound = () => {
@@ -561,6 +576,29 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
           onClose={() => setActiveCall(null)}
           onSendMessage={handleSendMessage}
         />
+      )}
+
+      {toast && (
+        <div className="toast-container">
+          <div className="toast-notification" onClick={() => {
+            if (toast.groupId) {
+              const group = groups.find(g => g._id === toast.groupId);
+              if (group) handleSelectChatFromSidebar({ ...group, isGroup: true });
+            } else {
+              const conv = conversations.find(c => c.otherUser?._id === toast.senderId);
+              if (conv) handleSelectChatFromSidebar(conv);
+            }
+            setToast(null);
+          }}>
+            <div className="toast-icon">
+              <i className="fas fa-comment-alt"></i>
+            </div>
+            <div className="toast-content">
+              <h4 className="toast-title">{toast.title}</h4>
+              <p className="toast-message">{toast.message}</p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
