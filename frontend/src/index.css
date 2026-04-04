@@ -8,9 +8,9 @@
   --bg-paper: rgba(24, 24, 27, 0.8);
   --bg-input: rgba(39, 39, 42, 0.5);
   
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  --text-primary: #f0f9ff;
+  --text-secondary: #bae6fd;
+  --text-muted: #7dd3fc;
   
   --border-color: rgba(255, 255, 255, 0.12);
   --border-light: rgba(255, 255, 255, 0.08);
@@ -537,6 +537,20 @@ body {
 .sidebar-item.active {
   background-color: rgba(255, 255, 255, 0.05);
   border-left: 3px solid var(--sky-500);
+}
+
+.sidebar-item-username {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sky-500);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-item-username.unread {
+  color: #ffffff;
 }
 
 /* Search Bar */
