@@ -51,6 +51,8 @@ exports.sendMessage = async (req, res) => {
       isViewOnce,
       publicId
     });
+    
+    await newMessage.save();
 
     const sender = await User.findById(senderId).select('username profilePicture');
     
