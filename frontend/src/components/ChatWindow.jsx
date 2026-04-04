@@ -218,41 +218,30 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
   return (
     <div className="chat-window">
       {/* Professional Header */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        padding: '12px 24px', 
-        background: 'rgba(15, 23, 42, 0.4)', 
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid var(--border-color)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="chat-header">
+        <div className="chat-header-info">
           <button 
-            className="icon-btn mobile-only" 
+            className="icon-btn mobile-only always-show" 
             onClick={onBack}
-            style={{ marginRight: '4px' }}
           >
             <ArrowLeft size={24} />
           </button>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
             <img 
               src={activeChat.profilePicture} 
               alt="" 
               className="avatar avatar-sm"
-              style={{ width: '40px', height: '40px' }}
             />
             {activeChat.online && <div className="online-indicator"></div>}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{activeChat.username}</h2>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+          <div className="chat-header-user">
+            <h2 className="chat-header-username">{activeChat.username}</h2>
+            <p className="chat-header-status">
               {activeChat.online ? 'Online' : 'Recent activity'}
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="chat-header-actions">
           {showSearch ? (
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input 
@@ -261,20 +250,11 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ 
-                  padding: '6px 32px 6px 12px',
-                  borderRadius: '16px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-input)',
-                  color: 'var(--text-primary)',
-                  fontSize: '13px',
-                  outline: 'none',
-                  width: '200px'
-                }}
+                className="chat-search-input"
               />
               <button 
                 onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-                style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                className="chat-search-close"
               >
                 <X size={14} />
               </button>
@@ -326,7 +306,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
               onEmojiClick={handleEmojiClick} 
               autoFocusSearch={false}
               theme="light"
-              width={350}
+              width="100%"
               height={400}
             />
           </div>
@@ -335,11 +315,11 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
         {/* Sticker Picker Overlay */}
         {showStickerPicker && (
           <div ref={stickerPickerRef} className="sticker-picker-container" style={{ bottom: '100%', left: '16px', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>Stickers</h3>
+            <div className="sticker-picker-header">
+              <h3 className="sticker-picker-title">Stickers</h3>
               <button 
                 onClick={() => setShowStickerPicker(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+                className="sticker-picker-close"
               >
                 <X size={16} />
               </button>
@@ -350,7 +330,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
                   key={sticker.id} 
                   className="sticker-item" 
                   onClick={() => handleSendSticker(sticker.emoji)}
-                  style={{ fontSize: '40px', cursor: 'pointer' }}
+                  style={{ fontSize: '40px' }}
                 >
                   {sticker.emoji}
                 </div>
@@ -369,20 +349,20 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
           />
           
           {isRecording ? (
-            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-input)', padding: '8px 16px', borderRadius: '24px' }}>
+            <div className="recording-container">
               <div className="recording-pulse"></div>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#ef4444' }}>Recording {formatDuration(recordingDuration)}</span>
+              <span className="recording-status">Recording {formatDuration(recordingDuration)}</span>
               <button 
                 type="button"
                 onClick={stopRecording}
-                style={{ marginLeft: 'auto', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', padding: '4px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                className="recording-stop-btn"
               >
                 Stop & Send
               </button>
               <button 
                 type="button"
                 onClick={() => { mediaRecorderRef.current.onstop = null; stopRecording(); }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+                className="recording-cancel-btn"
               >
                 Cancel
               </button>
@@ -390,133 +370,109 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
           ) : (
             <>
               {isAIPromptOpen && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: '100%',
-                  right: '16px',
-                  marginBottom: '8px',
-                  background: 'var(--bg-paper)',
-                  backdropFilter: 'blur(20px)',
-                  padding: '16px',
-                  borderRadius: '16px',
-                  border: '1px solid var(--border-color)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                  width: '300px',
-                  zIndex: 100
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: 'var(--sky-500)' }}>AI Image Creator</h3>
-                    <button onClick={() => setIsAIPromptOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+                <div className="ai-prompt-overlay">
+                  <div className="ai-prompt-header">
+                    <h3 className="ai-prompt-title">AI Image Creator</h3>
+                    <button onClick={() => setIsAIPromptOpen(false)} className="ai-prompt-close"><X size={16} /></button>
                   </div>
                   <textarea 
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder="Describe the image you want..."
-                    style={{
-                      width: '100%',
-                      height: '80px',
-                      padding: '8px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '13px',
-                      resize: 'none',
-                      marginBottom: '12px',
-                      outline: 'none'
-                    }}
+                    className="ai-prompt-input"
                   />
                   <button 
                     onClick={handleGenerateAI}
                     disabled={isGeneratingAI || !aiPrompt.trim()}
-                    className="btn btn-primary"
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    className="btn btn-primary ai-prompt-send"
                   >
                     {isGeneratingAI ? 'Creating...' : <><Sparkles size={16} /> Generate</>}
                   </button>
                 </div>
               )}
 
-              <button 
-                type="button"
-                className="icon-btn" 
-                onClick={() => setIsAIPromptOpen(!isAIPromptOpen)} 
-                title="AI Generate Image"
-                style={{ color: isAIPromptOpen ? 'var(--sky-500)' : 'inherit' }}
-              >
-                <Wand2 size={24} />
-              </button>
-
-              <button 
-                type="button"
-                className="chat-input-icon-btn" 
-                onClick={() => setShowCamera(true)}
-                title="Take Photo"
-              >
-                <Camera size={20} />
-              </button>
-
-              <button 
-                type="button"
-                className="icon-btn" 
-                onClick={() => fileInputRef.current.click()} 
-                title="Send Media"
-              >
-                <Image size={24} />
-              </button>
-
-              <button 
-                type="button"
-                className={`icon-btn ${showStickerPicker ? 'active' : ''}`}
-                onClick={() => { setShowStickerPicker(!showStickerPicker); setShowEmojiPicker(false); }}
-                title="Send Stickers"
-                style={{ color: showStickerPicker ? '#0ea5e9' : 'inherit' }}
-              >
-                <Sticker size={24} />
-              </button>
-              
-              <div className="pill-input">
+              <div className="chat-input-wrapper">
                 <button 
                   type="button"
                   className="icon-btn" 
-                  style={{ padding: '4px' }} 
-                  onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickerPicker(false); }}
-                  title="Add Emoji"
+                  onClick={() => setIsAIPromptOpen(!isAIPromptOpen)} 
+                  title="AI Generate Image"
+                  style={{ color: isAIPromptOpen ? 'var(--sky-500)' : 'inherit' }}
                 >
-                  <Smile size={22} style={{ color: showEmojiPicker ? '#0ea5e9' : '#6b7280' }} />
+                  <Wand2 size={24} />
                 </button>
-                <form onSubmit={handleSend} style={{ flexGrow: 1, display: 'flex' }}>
-                  <input
-                    type="text"
-                    placeholder={isUploading || isGeneratingAI ? "Processing..." : "Type a message"}
-                    disabled={isUploading || isGeneratingAI}
-                    value={inputText}
-                    onChange={handleTyping}
-                    onFocus={() => { setShowEmojiPicker(false); setShowStickerPicker(false); }}
-                  />
-                </form>
-              </div>
 
-              {inputText.trim() ? (
                 <button 
                   type="button"
-                  onClick={handleSend}
-                  disabled={isUploading || isGeneratingAI}
-                  className="send-btn"
-                  style={{ flexShrink: 0 }}
+                  className="chat-input-icon-btn mobile-hidden" 
+                  onClick={() => setShowCamera(true)}
+                  title="Take Photo"
                 >
-                  <Send size={20} />
+                  <Camera size={20} />
                 </button>
-              ) : (
+
                 <button 
                   type="button"
-                  onClick={startRecording}
-                  disabled={isUploading || isGeneratingAI}
-                  className="send-btn"
-                  title="Hold to Record"
-                  style={{ flexShrink: 0 }}
+                  className="icon-btn" 
+                  onClick={() => fileInputRef.current.click()} 
+                  title="Send Media"
                 >
-                  <Mic size={20} />
+                  <Image size={24} />
                 </button>
-              )}
+
+                <button 
+                  type="button"
+                  className={`icon-btn ${showStickerPicker ? 'active' : ''}`}
+                  onClick={() => { setShowStickerPicker(!showStickerPicker); setShowEmojiPicker(false); }}
+                  title="Send Stickers"
+                  style={{ color: showStickerPicker ? '#0ea5e9' : 'inherit' }}
+                >
+                  <Sticker size={24} />
+                </button>
+                
+                <div className="pill-input">
+                  <button 
+                    type="button"
+                    className="icon-btn" 
+                    style={{ padding: '4px' }} 
+                    onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickerPicker(false); }}
+                    title="Add Emoji"
+                  >
+                    <Smile size={22} style={{ color: showEmojiPicker ? '#0ea5e9' : '#6b7280' }} />
+                  </button>
+                  <form onSubmit={handleSend} style={{ flexGrow: 1, display: 'flex' }}>
+                    <input
+                      type="text"
+                      placeholder={isUploading || isGeneratingAI ? "Processing..." : "Type a message"}
+                      disabled={isUploading || isGeneratingAI}
+                      value={inputText}
+                      onChange={handleTyping}
+                      onFocus={() => { setShowEmojiPicker(false); setShowStickerPicker(false); }}
+                    />
+                  </form>
+                </div>
+
+                {inputText.trim() ? (
+                  <button 
+                    type="button"
+                    onClick={handleSend}
+                    disabled={isUploading || isGeneratingAI}
+                    className="send-btn"
+                  >
+                    <Send size={20} />
+                  </button>
+                ) : (
+                  <button 
+                    type="button"
+                    onClick={startRecording}
+                    disabled={isUploading || isGeneratingAI}
+                    className="send-btn"
+                    title="Hold to Record"
+                  >
+                    <Mic size={20} />
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>

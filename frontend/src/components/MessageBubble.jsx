@@ -97,9 +97,9 @@ const MessageBubble = ({ message, isOwn, userId }) => {
       if (message.read && !isOwn) {
         // Receiver already opened this once
         return (
-          <div className="llo-btn opened" style={{ opacity: 0.5, cursor: 'default', background: 'var(--bg-input)' }}>
+          <div className="llo-btn opened">
              <div className="llo-icon-container">
-               <Check size={20} className="llo-icon" style={{ color: 'var(--sky-500)' }} />
+               <Check size={20} className="llo-icon" />
              </div>
              <div className="llo-text">
                <div className="llo-label">LLO Opened</div>
@@ -112,17 +112,13 @@ const MessageBubble = ({ message, isOwn, userId }) => {
       if (isOwn) {
         // Sender sees a static "Sent LLO" bubble
         return (
-          <div className="llo-btn sender-locked" style={{ 
-            cursor: 'default', 
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}>
-            <div className="llo-icon-container" style={{ opacity: 0.5 }}>
+          <div className="llo-btn sender-locked">
+            <div className="llo-icon-container sender-locked-icon">
               <img src="/favicon.png" alt="LLO" className="llo-icon" />
             </div>
             <div className="llo-text">
-              <div className="llo-label" style={{ opacity: 0.7 }}>Sent LLO {message.mediaType}</div>
-              <div className="llo-sub" style={{ opacity: 0.5 }}>Waiting for view</div>
+              <div className="llo-label sender-locked-label">Sent LLO {message.mediaType}</div>
+              <div className="llo-sub sender-locked-sub">Waiting for view</div>
             </div>
           </div>
         );
@@ -131,11 +127,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
       return (
         <button 
           onClick={handleOpenViewOnce}
-          className="llo-btn"
-          style={{
-            background: isOwn ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : 'var(--bg-input)',
-            border: isOwn ? 'none' : '2px dashed var(--sky-500)'
-          }}
+          className={`llo-btn ${isOwn ? 'own' : 'other'}-locked`}
         >
           <div className="llo-icon-container">
             <img src="/src/assets/logo.png" alt="LLO" className="llo-icon llo-pulse-animation" />
@@ -149,37 +141,26 @@ const MessageBubble = ({ message, isOwn, userId }) => {
     }
 
     const ViewerOverlay = (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: '#0a0a0a',
-        zIndex: 99999,
-        display: 'flex',
-        flexDirection: 'column',
-        color: 'white'
-      }}>
-        <div className="llo-viewer-header" style={{ position: 'fixed', top: 0, left: 0, right: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/favicon.png" alt="LLO" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
+      <div className="llo-viewer-overlay">
+        <div className="llo-viewer-header-fixed">
+          <div className="llo-viewer-header-content">
+            <div className="llo-viewer-user-info">
+              <div className="llo-viewer-avatar-bg">
+                <img src="/favicon.png" alt="LLO" className="llo-viewer-avatar" />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontWeight: '800', fontSize: '15px', letterSpacing: '0.5px' }}>LLO {message.mediaType.toUpperCase()}</span>
-                <span style={{ opacity: 0.6, fontSize: '12px' }}>From {isOwn ? 'You' : 'Friend'}</span>
+              <div className="llo-viewer-meta">
+                <span className="llo-viewer-title">LLO {message.mediaType.toUpperCase()}</span>
+                <span className="llo-viewer-subtitle">From {isOwn ? 'You' : 'Friend'}</span>
               </div>
             </div>
             <button 
               onClick={handleManualClose}
-              style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              className="llo-viewer-close-btn"
             >
               <X size={26} />
             </button>
           </div>
-          <div className="llo-timer-bar" style={{ marginTop: '12px' }}>
+          <div className="llo-timer-bar">
             <div 
               className="llo-timer-progress"
               style={{ 
@@ -191,30 +172,18 @@ const MessageBubble = ({ message, isOwn, userId }) => {
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="llo-viewer-media-container">
           {message.mediaType === 'image' ? (
             <img 
               src={message.mediaUrl} 
               alt="LLO" 
-              style={{ 
-                maxWidth: '100%', 
-                maxHeight: '100vh', 
-                width: '100vw', 
-                height: '100vh', 
-                objectFit: 'contain' 
-              }} 
+              className="llo-viewer-media"
             />
           ) : (
             <video 
               src={message.mediaUrl} 
               autoPlay 
-              style={{ 
-                maxWidth: '100%', 
-                maxHeight: '100vh', 
-                width: '100vw', 
-                height: '100vh', 
-                objectFit: 'contain' 
-              }}
+              className="llo-viewer-media"
               onEnded={handleManualClose} 
             />
           )}
@@ -228,19 +197,19 @@ const MessageBubble = ({ message, isOwn, userId }) => {
 
     if (message.mediaType === 'image' && message.mediaUrl) {
       return (
-        <div style={{ marginBottom: '8px', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
-          <img src={message.mediaUrl} alt="attachment" style={{ maxWidth: '100%', maxHeight: '400px', display: 'block' }} />
+        <div className="message-image-container">
+          <img src={message.mediaUrl} alt="attachment" className="message-image" />
         </div>
       );
     }
     
     if (message.mediaType === 'video' && message.mediaUrl) {
       return (
-        <div style={{ marginBottom: '8px', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+        <div className="message-video-container">
           <video 
             src={message.mediaUrl} 
             controls 
-            style={{ maxWidth: '100%', maxHeight: '400px', display: 'block' }} 
+            className="message-video"
           />
         </div>
       );
@@ -248,39 +217,25 @@ const MessageBubble = ({ message, isOwn, userId }) => {
 
     if (message.mediaType === 'audio' && message.mediaUrl) {
       return (
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '12px', 
-          padding: '8px 4px',
-          minWidth: '200px'
-        }}>
+        <div className="voice-message-container">
           <button 
             onClick={() => {
               if (isPlaying) audioRef.current.pause();
               else audioRef.current.play();
               setIsPlaying(!isPlaying);
             }}
-            style={{ 
-              width: '36px', 
-              height: '36px', 
-              borderRadius: '50%', 
-              background: isOwn ? 'rgba(255,255,255,0.2)' : 'var(--bg-input)',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: isOwn ? 'white' : 'var(--sky-500)',
-              cursor: 'pointer'
-            }}
+            className={`voice-play-btn ${isOwn ? 'own' : 'other'}`}
           >
             {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
           </button>
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ height: '3px', background: isOwn ? 'rgba(255,255,255,0.3)' : 'var(--border-color)', borderRadius: '2px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: isPlaying ? '100%' : '0%', background: isOwn ? 'white' : 'var(--sky-500)', borderRadius: '2px', transition: 'width 0.1s linear' }}></div>
+          <div className="voice-waveform-container">
+            <div className={`voice-waveform-bg ${isOwn ? 'own' : 'other'}`}>
+              <div 
+                className={`voice-waveform-progress ${isOwn ? 'own' : 'other'}`}
+                style={{ width: isPlaying ? '100%' : '0%' }}
+              ></div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
+            <div className="voice-meta">
               <span>Voice Message</span>
               <Mic size={10} />
             </div>
@@ -299,7 +254,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
 
     if (message.mediaType === 'sticker' || (message.text && isOnlyEmoji(message.text) && message.text.length <= 4)) {
       return (
-        <div style={{ fontSize: '48px', padding: '8px 0' }}>
+        <div className="sticker-message">
           {message.text}
         </div>
       );
@@ -311,34 +266,17 @@ const MessageBubble = ({ message, isOwn, userId }) => {
       const isVideo = text.toLowerCase().includes('video');
       
       return (
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '12px', 
-          padding: '8px 12px',
-          background: isOwn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
-          borderRadius: '12px',
-          color: isMissed ? '#ef4444' : (isOwn ? 'white' : 'var(--sky-500)'),
-          border: '1px solid rgba(255,255,255,0.05)'
-        }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            background: isMissed ? 'rgba(239, 68, 68, 0.1)' : (isOwn ? 'rgba(255,255,255,0.2)' : 'rgba(14, 165, 233, 0.1)'),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
+        <div className={`call-message-container ${isOwn ? 'own' : 'other'} ${isMissed ? 'missed' : ''}`}>
+          <div className={`call-icon-bg ${isMissed ? 'missed' : (isOwn ? 'own' : 'other')}`}>
             {isMissed ? (
                isVideo ? <VideoOff size={16} /> : <PhoneOff size={16} />
             ) : (
                isVideo ? <Video size={16} /> : <Phone size={16} />
             )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{message.text}</span>
-            <span style={{ fontSize: '11px', opacity: 0.7 }}>
+          <div className="call-info">
+            <span className="call-text">{message.text}</span>
+            <span className="call-sub">
               {isMissed ? 'No answer' : 'Call ended'}
             </span>
           </div>
@@ -346,7 +284,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
       );
     }
 
-    return message.text && <p style={{ margin: 0, wordBreak: 'break-word' }}>{message.text}</p>;
+    return message.text && <p className="message-text">{message.text}</p>;
   };
 
   const isStickerMode = message.mediaType === 'sticker' || (message.text && isOnlyEmoji(message.text) && message.text.length <= 4);

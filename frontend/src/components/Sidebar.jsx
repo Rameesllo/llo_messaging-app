@@ -103,14 +103,14 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
   return (
     <div className="sidebar">
       <div className="search-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="sidebar-header">
+          <div className="sidebar-header-left">
             <div style={{ position: 'relative', cursor: 'pointer' }} onClick={onOpenProfile} title="Edit Profile">
-              <img src={user?.profilePicture} alt="profile" className="avatar avatar-sm hover:ring-2 hover:ring-sky-500 transition-all" style={{ width: '40px', height: '40px' }} />
+              <img src={user?.profilePicture} alt="profile" className="avatar avatar-sm hover:ring-2 hover:ring-sky-500 transition-all" />
             </div>
             <h1 style={{ fontSize: '20px', fontWeight: 'bold' }}>Messages</h1>
           </div>
-          <div style={{ display: 'flex', gap: '4px' }}>
+          <div className="sidebar-header-right">
             <button onClick={onOpenAddFriend} className="icon-btn" title="Add Friends"><UserPlus size={20} /></button>
             <button onClick={onOpenDiscover} className="icon-btn" title="Discover People"><Compass size={20} /></button>
             <button onClick={onOpenRequests} className="icon-btn" title="Friend Requests" style={{ position: 'relative' }}>
@@ -201,32 +201,17 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
         )}
       </div>
 
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="sidebar-footer">
         {canInstall && (
           <button 
             onClick={onInstall} 
-            className="sidebar-footer-btn" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px', 
-              padding: '10px 16px', 
-              borderRadius: '12px', 
-              width: '100%', 
-              color: 'var(--sky-500)', 
-              background: 'rgba(14, 165, 233, 0.1)', 
-              border: 'none', 
-              cursor: 'pointer', 
-              fontWeight: '600', 
-              fontSize: '14px',
-              marginBottom: '4px'
-            }}
+            className="sidebar-footer-btn install"
           >
             <Download size={20} />
             <span>Install App</span>
           </button>
         )}
-        <button onClick={onLogout} className="sidebar-footer-btn" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '12px', width: '100%', color: '#ef4444', background: 'rgba(239, 68, 68, 0.05)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
+        <button onClick={onLogout} className="sidebar-footer-btn logout">
           <LogOut size={20} />
           <span>Logout</span>
         </button>
