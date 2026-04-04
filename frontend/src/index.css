@@ -134,6 +134,7 @@ body {
   -webkit-backdrop-filter: blur(10px);
   min-width: 0;
   z-index: 5;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Components */
@@ -832,6 +833,7 @@ body {
     width: 100% !important;
     height: 100vh;
     border-right: none;
+    transition: transform 0.3s ease-in-out;
   }
 
   .chat-window {
@@ -842,6 +844,8 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
+    background: var(--bg-app);
+    z-index: 100;
   }
 
   /* Classes to control visibility on mobile */
@@ -850,33 +854,75 @@ body {
   }
 
   .messages-area {
-    padding: 16px;
+    padding: 12px;
+    padding-bottom: 24px;
+    gap: 4px;
   }
 
   .message-bubble {
-    max-width: 85%;
+    max-width: 90%;
+    font-size: 14px;
+    padding: 8px 12px;
   }
 
   .pill-input-container {
     padding: 0;
+    gap: 4px;
+  }
+
+  .pill-input {
+    padding: 2px 12px;
+  }
+
+  .pill-input input {
+    font-size: 14px;
+  }
+
+  .icon-btn {
+    padding: 6px;
+  }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
   }
 
   .modal-container {
-    max-width: 95%;
-    margin: 10px;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    margin: 0;
   }
 
-  .llo-viewer-header {
+  .profile-form {
     padding: 16px;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+  }
+
+  .avatar-wrapper img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 20px;
   }
 
   /* Fix for overlapping elements on some mobile browsers */
   .input-area {
-    padding-bottom: env(safe-area-inset-bottom, 12px);
+    padding: 8px 12px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 12px));
   }
 
   .mobile-only {
     display: flex !important;
+  }
+  
+  .sidebar-item {
+    padding: 12px 16px;
   }
 }
 

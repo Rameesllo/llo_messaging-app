@@ -5,7 +5,13 @@ let socket;
 export const initiateSocket = (userId) => {
   if (!socket) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const BACKEND_URL = isLocal ? `http://${window.location.hostname}:5000` : window.location.origin;
+    let BACKEND_URL = import.meta.env.VITE_API_URL || (isLocal ? `http://${window.location.hostname}:5000` : window.location.origin);
+    
+    // Fix: Prepend https:// if protocol is missing (consistent with api.js)
+    if (BACKEND_URL && !BACKEND_URL.startsWith('http')) {
+      BACKEND_URL = `https://${BACKEND_URL}`;
+    }
+    
     socket = io(BACKEND_URL);
   }
   
