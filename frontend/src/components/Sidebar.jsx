@@ -105,18 +105,18 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
       <div className="search-container">
         <div className="sidebar-header">
           <div className="sidebar-header-left">
-            <div style={{ position: 'relative', cursor: 'pointer' }} onClick={onOpenProfile} title="Edit Profile">
+            <div className="sidebar-user-avatar-container" onClick={onOpenProfile} title="Edit Profile">
               <img src={user?.profilePicture} alt="profile" className="avatar avatar-sm hover:ring-2 hover:ring-sky-500 transition-all" />
             </div>
-            <h1 style={{ fontSize: '20px', fontWeight: 'bold' }}>Messages</h1>
+            <h1 className="sidebar-title">Messages</h1>
           </div>
           <div className="sidebar-header-right">
             <button onClick={onOpenAddFriend} className="icon-btn" title="Add Friends"><UserPlus size={20} /></button>
             <button onClick={onOpenDiscover} className="icon-btn" title="Discover People"><Compass size={20} /></button>
-            <button onClick={onOpenRequests} className="icon-btn" title="Friend Requests" style={{ position: 'relative' }}>
+            <button onClick={onOpenRequests} className="icon-btn" title="Friend Requests">
               <Bell size={20} />
               {pendingCount > 0 && (
-                <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#ef4444', color: 'white', fontSize: '10px', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                <span className="sidebar-header-badge">
                   {pendingCount}
                 </span>
               )}
@@ -125,21 +125,21 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
           </div>
         </div>
         <div className="search-input-wrapper">
-          <Search size={18} style={{ position: 'absolute', left: '12px', color: '#9ca3af' }} />
+          <Search size={18} className="sidebar-search-icon" />
           <input type="text" placeholder="Search contacts" className="search-input" value={searchQuery} onChange={handleSearch} />
         </div>
       </div>
 
-      <div style={{ flexGrow: 1, overflowY: 'auto' }}>
+      <div className="sidebar-scroll-area">
         {isSearching ? (
           <div>
-            <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', padding: '16px 16px 8px' }}>Add People</h3>
+            <h3 className="sidebar-section-title">Add People</h3>
             {searchResults.map((result) => (
               <button key={result._id} onClick={() => { onSearchSelect(result); setSearchQuery(''); setIsSearching(false); }} className="sidebar-item">
-                <img src={result.profilePicture} className="avatar avatar-md" style={{ width: '56px', height: '56px' }} alt="" />
-                <div style={{ flexGrow: 1, minWidth: 0 }}>
-                  <p style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{result.username}</p>
-                  <p className="truncate" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{result.bio || 'Available'}</p>
+                <img src={result.profilePicture} className="avatar avatar-md" alt="" />
+                <div className="sidebar-item-info">
+                  <p className="sidebar-item-username">{result.username}</p>
+                  <p className="sidebar-item-preview">{result.bio || 'Available'}</p>
                 </div>
                 <Plus size={20} style={{ color: 'var(--sky-500)' }} />
               </button>
@@ -149,20 +149,20 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
           <>
             {/* Active Chats & Friends */}
             {unifiedList.map((item) => (
-              <button key={item._id} onClick={() => item.isNew ? onSearchSelect(item.otherUser) : onSelectChat(item)} className="sidebar-item" style={{ position: 'relative' }}>
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                   <img src={item.otherUser?.profilePicture} className="avatar avatar-md" style={{ width: '56px', height: '56px' }} alt="" />
+              <button key={item._id} onClick={() => item.isNew ? onSearchSelect(item.otherUser) : onSelectChat(item)} className="sidebar-item">
+                <div className="sidebar-item-avatar-wrapper">
+                   <img src={item.otherUser?.profilePicture} className="avatar avatar-md" alt="" />
                   {item.otherUser?.online && <div className="online-indicator"></div>}
                 </div>
-                <div style={{ flexGrow: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontWeight: (item.unreadCount > 0) ? '800' : 'bold', margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>{item.otherUser?.username}</h3>
-                    <span style={{ fontSize: '11px', color: (item.unreadCount > 0) ? 'var(--sky-500)' : 'var(--text-muted)', fontWeight: (item.unreadCount > 0) ? '600' : 'normal' }}>{item.isNew ? '' : getRelativeTime(item.createdAt)}</span>
+                <div className="sidebar-item-info">
+                  <div className="sidebar-item-header">
+                    <h3 className={`sidebar-item-username ${item.unreadCount > 0 ? 'unread' : ''}`}>{item.otherUser?.username}</h3>
+                    <span className={`sidebar-item-time ${item.unreadCount > 0 ? 'unread' : ''}`}>{item.isNew ? '' : getRelativeTime(item.createdAt)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
-                    <p className="truncate" style={{ fontSize: '13px', color: (item.unreadCount > 0) ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: (item.unreadCount > 0) ? '500' : 'normal', margin: 0, flex: 1 }}>{getStatusPreview(item)}</p>
+                  <div className="sidebar-item-preview-row">
+                    <p className={`sidebar-item-preview ${item.unreadCount > 0 ? 'unread' : ''}`}>{getStatusPreview(item)}</p>
                     {item.unreadCount > 0 && (
-                      <span style={{ background: '#0ea5e9', color: 'white', fontSize: '10px', fontWeight: 'bold', borderRadius: '10px', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', marginLeft: '8px' }}>{item.unreadCount}</span>
+                      <span className="sidebar-unread-badge">{item.unreadCount}</span>
                     )}
                   </div>
                 </div>
@@ -171,19 +171,24 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
 
             {/* Discover People Section */}
             {discoverUsers.length > 0 && (
-              <div style={{ padding: '8px 0', borderTop: '1px solid var(--border-color)', marginTop: '8px' }}>
-                <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', padding: '16px 16px 8px' }}>Discover People</h3>
+              <div className="discover-section">
+                <h3 className="sidebar-section-title">Discover People</h3>
                 {discoverUsers.map((discoverUser) => (
                   <div key={discoverUser._id} className="sidebar-item" style={{ cursor: 'default' }}>
-                    <img src={discoverUser.profilePicture} className="avatar avatar-md" style={{ width: '56px', height: '56px' }} alt="" />
-                    <div style={{ flexGrow: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 'bold', margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>{discoverUser.username}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-secondary)' }}>
-                        {discoverUser.gender && <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>{getGenderIcon(discoverUser.gender)}{discoverUser.gender}</span>}
+                    <img src={discoverUser.profilePicture} className="avatar avatar-md" alt="" />
+                    <div className="sidebar-item-info">
+                      <p className="sidebar-item-username">{discoverUser.username}</p>
+                      <div className="discover-user-meta">
+                        {discoverUser.gender && (
+                          <span className="discover-meta-item">
+                            {getGenderIcon(discoverUser.gender)}
+                            {discoverUser.gender}
+                          </span>
+                        )}
                         {discoverUser.dateOfBirth && <span>• {formatBirthday(discoverUser.dateOfBirth)}</span>}
                       </div>
                     </div>
-                    <button onClick={() => onSendRequest(discoverUser._id)} className="icon-btn-rounded" title="Add Friend" style={{ background: 'var(--sky-500)', color: 'white', padding: '6px', borderRadius: '50%', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button onClick={() => onSendRequest(discoverUser._id)} className="discover-add-btn" title="Add Friend">
                       <UserPlus size={16} />
                     </button>
                   </div>
@@ -192,8 +197,8 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
             )}
             
             {unifiedList.length === 0 && discoverUsers.length === 0 && (
-               <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                  <Compass size={40} style={{ margin: '0 auto 16px', color: 'var(--sky-500)', opacity: 0.5 }} />
+               <div className="sidebar-empty-state">
+                  <Compass size={40} className="sidebar-empty-icon" />
                   <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No users to discover right now.</p>
                </div>
             )}

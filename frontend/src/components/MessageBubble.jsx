@@ -296,52 +296,35 @@ const MessageBubble = ({ message, isOwn, userId }) => {
   return (
     <div className={`message-bubble-wrapper ${isOwn ? 'own' : 'other'}`}>
       <div 
-        className={`message-bubble ${isOwn ? 'own' : 'other'}`}
-        style={isStickerMode ? { background: 'none', boxShadow: 'none', border: 'none', padding: '4px 0' } : {}}
+        className={`message-bubble ${isOwn ? 'own' : 'other'} ${isStickerMode ? 'sticker-mode' : ''}`}
       >
         {renderContent()}
         
         {message.reactions && message.reactions.length > 0 && (
-          <div className="reactions-badges" style={{
-            position: 'absolute',
-            bottom: '-12px',
-            [isOwn ? 'right' : 'left']: '12px',
-            display: 'flex',
-            gap: '2px',
-            background: 'var(--bg-paper)',
-            padding: '2px 6px',
-            borderRadius: '10px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            border: '1px solid var(--border-light)',
-            zIndex: 10
-          }}>
+          <div className="message-reactions-container">
             {message.reactions.map((r, i) => (
-              <span key={i} title={r.emoji} style={{ fontSize: '12px' }}>{r.emoji}</span>
+              <span key={i} title={r.emoji} className="message-reaction-badge">{r.emoji}</span>
             ))}
           </div>
         )}
 
-        <div className="message-meta" style={isStickerMode ? { color: '#9ca3af', justifyContent: isOwn ? 'flex-end' : 'flex-start' } : {}}>
+        <div className={`message-meta ${isStickerMode ? 'sticker-mode' : ''}`}>
           <span>{formatTime(message.createdAt)}</span>
           {isOwn && !message.groupId && (
-            <div style={{ display: 'flex', marginLeft: '6px', position: 'relative', width: '18px', height: '14px', flexShrink: 0 }}>
+            <div className="message-status-icons">
               <Check 
                 size={14} 
+                className="message-status-check"
                 style={{ 
-                  color: message.read ? '#3b82f6' : (message.delivered ? '#fff' : 'rgba(255,255,255,0.6)'),
-                  position: 'absolute',
-                  left: 0,
-                  strokeWidth: 3
+                  color: message.read ? '#3b82f6' : (message.delivered ? '#fff' : 'rgba(255,255,255,0.6)')
                 }} 
               />
               {(message.delivered || message.read) && (
                 <Check 
                   size={14} 
+                  className="message-status-check double"
                   style={{ 
-                    color: message.read ? '#3b82f6' : '#fff',
-                    position: 'absolute',
-                    left: '5px',
-                    strokeWidth: 3
+                    color: message.read ? '#3b82f6' : '#fff'
                   }} 
                 />
               )}
@@ -351,45 +334,19 @@ const MessageBubble = ({ message, isOwn, userId }) => {
 
         <button 
           onClick={() => setShowReactions(!showReactions)}
-          className="reaction-trigger-btn"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            [isOwn ? 'left' : 'right']: '-30px',
-            transform: 'translateY(-50%)',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            opacity: showReactions ? 1 : 0,
-            transition: 'opacity 0.2s',
-            padding: '4px'
-          }}
+          className={`message-action-btn reaction-trigger-btn ${showReactions ? 'active' : ''}`}
+          title="React"
         >
           <Smile size={18} />
         </button>
 
         {showReactions && (
-          <div className="reaction-picker" style={{
-            position: 'absolute',
-            top: '-45px',
-            [isOwn ? 'left' : 'right']: '0',
-            background: 'var(--bg-paper)',
-            padding: '4px 8px',
-            borderRadius: '20px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            display: 'flex',
-            gap: '8px',
-            zIndex: 100,
-            border: '1px solid var(--border-color)'
-          }}>
+          <div className="reaction-picker-container">
             {['❤️', '👍', '😂', '😮', '😢', '🔥'].map(emoji => (
               <button 
                 key={emoji}
                 onClick={() => handleToggleReaction(emoji)}
-                style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', transition: 'transform 0.1s' }}
-                onMouseEnter={e => e.target.style.transform = 'scale(1.3)'}
-                onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+                className="reaction-picker-btn"
               >
                 {emoji}
               </button>
@@ -400,77 +357,28 @@ const MessageBubble = ({ message, isOwn, userId }) => {
         {!message.isDeletedForEveryone && (
           <button 
             onClick={() => setShowDeleteActions(!showDeleteActions)}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              [isOwn ? 'left' : 'right']: showReactions ? '-55px' : '-30px',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              opacity: showDeleteActions ? 1 : 0,
-              transition: 'opacity 0.2s',
-              padding: '4px'
-            }}
-            className="delete-trigger-btn"
+            className={`message-action-btn delete-trigger-btn ${showDeleteActions ? 'active' : ''}`}
+            title="Delete"
           >
             <Trash2 size={16} />
           </button>
         )}
 
         {showDeleteActions && (
-          <div ref={deleteActionsRef} style={{
-            position: 'absolute',
-            top: '100%',
-            [isOwn ? 'left' : 'right']: '0',
-            background: 'var(--bg-paper)',
-            borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-            border: '1px solid var(--border-color)',
-            overflow: 'hidden',
-            zIndex: 1000,
-            width: '160px',
-            marginTop: '8px'
-          }}>
+          <div ref={deleteActionsRef} className="delete-menu-container">
             <button 
               onClick={() => handleDelete('me')}
-              style={{
-                width: '100%',
-                padding: '10px 16px',
-                textAlign: 'left',
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              className="delete-menu-item"
+              className="delete-menu-btn"
             >
+              <Trash2 size={14} />
               Delete for me
             </button>
             {isOwn && (
               <button 
                 onClick={() => handleDelete('everyone')}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  textAlign: 'left',
-                  background: 'none',
-                  border: 'none',
-                  color: '#ef4444',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  borderTop: '1px solid var(--border-light)'
-                }}
-                className="delete-menu-item"
+                className="delete-menu-btn danger"
               >
+                <Trash2 size={14} />
                 Delete for everyone
               </button>
             )}

@@ -30,7 +30,7 @@ const CreateGroupModal = ({ friends, onClose, onCreate }) => {
         
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="avatar-edit-container">
-             <div className="avatar-wrapper" style={{ background: 'var(--sky-500)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+             <div className="avatar-wrapper group-modal-avatar-wrapper">
                  <Users size={60} />
              </div>
           </div>
@@ -60,22 +60,12 @@ const CreateGroupModal = ({ friends, onClose, onCreate }) => {
 
           <div className="form-group">
             <label className="form-label">Select Friends ({selectedFriends.length})</label>
-            <div style={{ maxHeight: '200px', overflowY: 'auto', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '8px' }}>
+            <div className="group-modal-friends-list">
               {friends.map(friend => (
                 <div 
                   key={friend._id} 
                   onClick={() => toggleFriend(friend._id)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px', 
-                    padding: '8px', 
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    background: selectedFriends.includes(friend._id) ? 'var(--sky-500)' : 'transparent',
-                    color: selectedFriends.includes(friend._id) ? 'white' : 'var(--text-primary)',
-                    marginBottom: '4px'
-                  }}
+                  className={`group-modal-friend-item ${selectedFriends.includes(friend._id) ? 'selected' : ''}`}
                 >
                   <img src={friend.profilePicture} className="avatar avatar-xs" alt="" />
                   <span style={{ fontSize: '14px', fontWeight: '500' }}>{friend.username}</span>

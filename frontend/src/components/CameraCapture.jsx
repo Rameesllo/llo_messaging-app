@@ -605,178 +605,97 @@ const CameraCapture = ({ onCapture, onClose }) => {
   return (
     <>
       <SvgDefs />
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 99999,
-        background: '#000',
-        display: 'flex', flexDirection: 'column',
-      }}>
+      <div className="camera-container">
         {/* Close */}
-        <button onClick={onClose} style={{
-          position: 'absolute', top: 20, left: 20, zIndex: 100001,
-          background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff',
-          width: 44, height: 44, borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', backdropFilter: 'blur(6px)', fontSize: 20,
-        }}>
-          <X size={22} />
+        <button onClick={onClose} className="camera-close-btn">
+          <X size={26} />
         </button>
 
         {/* Filter name badge */}
         {!capturedImage && (
-          <div style={{
-            position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)',
-            zIndex: 100001, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)',
-            padding: '4px 18px', borderRadius: 22, color: '#fff',
-            fontSize: 13, fontWeight: 700, letterSpacing: '.03em',
-          }}>
+          <div className="camera-filter-badge">
             {selectedFilter.emoji} {selectedFilter.name}
           </div>
         )}
 
         {/* Camera / preview */}
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <div className="camera-video-wrapper">
           {!capturedImage ? (
             <>
               <video
                 ref={videoRef} autoPlay playsInline
+                className="camera-video"
                 style={{
-                  width: '100%', height: '100%', objectFit: 'cover',
                   transform: isFrontCamera ? 'scaleX(-1)' : 'none',
                   filter: videoFilterStyle,
-                  transition: 'filter 0.3s ease',
                 }}
               />
               {/* Animated emoji overlay canvas */}
-              <canvas ref={overlayCanvasRef} style={{
-                position: 'absolute', inset: 0,
-                width: '100%', height: '100%',
-                pointerEvents: 'none', zIndex: 2,
-              }} />
+              <canvas ref={overlayCanvasRef} className="camera-overlay-canvas" />
             </>
           ) : (
-            <img src={capturedImage} alt="captured"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={capturedImage} alt="captured" className="camera-video" />
           )}
 
           {error && (
-            <div style={{
-              position: 'absolute', top: '50%', left: '50%',
-              transform: 'translate(-50%,-50%)', zIndex: 200,
-              background: 'rgba(239,68,68,0.85)', color: '#fff',
-              padding: '12px 20px', borderRadius: 12, textAlign: 'center', maxWidth: '80%',
-            }}>{error}</div>
+            <div className="camera-error-badge">{error}</div>
           )}
         </div>
 
         {/* Bottom panel */}
         {!capturedImage ? (
-          <div style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(20px)', paddingBottom: 24 }}>
+          <div className="camera-bottom-panel">
 
             {/* Category tabs */}
-            <div style={{ display: 'flex', gap: 4, padding: '10px 12px 6px' }}>
+            <div className="camera-category-tabs">
               {CATEGORIES.map(cat => (
-                <button key={cat.id} onClick={() => setActiveCategory(cat.id)} style={{
-                  flex: 1, padding: '6px 4px', borderRadius: 20,
-                  border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700,
-                  background: activeCategory === cat.id
-                    ? 'linear-gradient(135deg,#0ea5e9,#8b5cf6)'
-                    : 'rgba(255,255,255,0.08)',
-                  color: activeCategory === cat.id ? '#fff' : 'rgba(255,255,255,0.55)',
-                  transition: 'all 0.2s',
-                }}>
+                <button 
+                  key={cat.id} 
+                  onClick={() => setActiveCategory(cat.id)} 
+                  className={`camera-category-btn ${activeCategory === cat.id ? 'active' : ''}`}
+                >
                   {cat.label}
                 </button>
               ))}
             </div>
 
             {/* Filter strip */}
-            <div style={{
-              display: 'flex', gap: 10, overflowX: 'auto',
-              padding: '6px 12px 10px', scrollbarWidth: 'none',
-            }}>
+            <div className="camera-filter-strip">
               {filtersByCategory.map(f => (
-                <button key={f.id} onClick={() => setSelectedFilter(f)} style={{
-                  flexShrink: 0, display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', gap: 5,
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                }}>
-                  <div style={{
-                    width: 60, height: 60, borderRadius: 16,
-                    background: 'rgba(255,255,255,0.07)',
-                    border: selectedFilter.id === f.id
-                      ? '3px solid #0ea5e9'
-                      : '2px solid rgba(255,255,255,0.12)',
-                    boxShadow: selectedFilter.id === f.id
-                      ? '0 0 14px rgba(14,165,233,0.65)' : 'none',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 28,
-                    transform: selectedFilter.id === f.id ? 'scale(1.1)' : 'scale(1)',
-                    transition: 'all 0.2s',
-                  }}>
+                <button 
+                  key={f.id} 
+                  onClick={() => setSelectedFilter(f)} 
+                  className={`camera-filter-item ${selectedFilter.id === f.id ? 'active' : ''}`}
+                >
+                  <div className="camera-filter-icon">
                     {f.emoji}
                   </div>
-                  <span style={{
-                    color: selectedFilter.id === f.id ? '#0ea5e9' : 'rgba(255,255,255,0.6)',
-                    fontSize: 9, fontWeight: 700, textAlign: 'center',
-                    maxWidth: 60, lineHeight: 1.2, transition: 'color 0.2s',
-                  }}>{f.name}</span>
+                  <span className="camera-filter-label">{f.name}</span>
                 </button>
               ))}
             </div>
 
             {/* Capture controls */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-around',
-              padding: '6px 32px 0',
-            }}>
-              <button onClick={() => setIsFrontCamera(f => !f)} style={{
-                background: 'rgba(255,255,255,0.12)', border: 'none', color: '#fff',
-                width: 52, height: 52, borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}>
-                <FlipHorizontal size={22} />
+            <div className="camera-controls">
+              <button onClick={() => setIsFrontCamera(f => !f)} className="camera-flip-btn">
+                <FlipHorizontal size={24} />
               </button>
 
               {/* Shutter button */}
-              <button onClick={capturePhoto}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
-                onMouseUp={e   => e.currentTarget.style.transform = 'scale(1)'}
-                style={{
-                  width: 80, height: 80, borderRadius: '50%',
-                  border: '5px solid rgba(255,255,255,0.9)',
-                  background: 'rgba(255,255,255,0.15)',
-                  cursor: 'pointer', transition: 'all 0.15s ease',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 0 28px rgba(14,165,233,0.5)',
-                }}>
-                <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fff', opacity: 0.92 }} />
+              <button onClick={capturePhoto} className="camera-shutter-btn">
+                <div className="camera-shutter-inner" />
               </button>
 
               <div style={{ width: 52 }} />
             </div>
           </div>
         ) : (
-          <div style={{
-            background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(20px)',
-            padding: '24px', display: 'flex', justifyContent: 'center', gap: 32, alignItems: 'center',
-          }}>
-            <button onClick={() => setCapturedImage(null)} style={{
-              background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444',
-              color: '#ef4444', padding: '12px 28px', borderRadius: 30,
-              display: 'flex', alignItems: 'center', gap: 8,
-              fontWeight: 700, fontSize: 15, cursor: 'pointer',
-            }}>
-              <RotateCcw size={18} /> Retake
+          <div className="camera-result-panel">
+            <button onClick={() => setCapturedImage(null)} className="camera-result-btn retake">
+              <RotateCcw size={20} /> Retake
             </button>
-            <button onClick={handleSend} style={{
-              background: 'linear-gradient(135deg,#0ea5e9,#8b5cf6)',
-              border: 'none', color: '#fff', padding: '12px 36px', borderRadius: 30,
-              display: 'flex', alignItems: 'center', gap: 8,
-              fontWeight: 700, fontSize: 15, cursor: 'pointer',
-              boxShadow: '0 6px 24px rgba(14,165,233,0.4)',
-            }}>
-              <Check size={18} /> Send
+            <button onClick={handleSend} className="camera-result-btn send">
+              <Check size={20} /> Send
             </button>
           </div>
         )}

@@ -37,144 +37,60 @@ const Login = ({ setUser }) => {
           <img src="/favicon.png" alt="LLO Logo" className="app-logo-large" />
         </div>
 
-        <h1 style={{ 
-          fontSize: '32px', 
-          fontWeight: '800', 
-          textAlign: 'center', 
-          marginBottom: '8px',
-          color: 'white'
-        }}>Welcome Back</h1>
-        <p style={{ 
-          textAlign: 'center', 
-          color: 'var(--text-secondary)', 
-          marginBottom: '24px',
-          fontSize: '14px' 
-        }}>Join the LLO Messaging community</p>
+        <h1 className="auth-title">Welcome Back</h1>
+        <p className="auth-subtitle">Join the LLO Messaging community</p>
         
         {error && (
-          <div style={{ 
-            background: 'rgba(239, 68, 68, 0.1)', 
-            color: '#ef4444', 
-            padding: '12px 16px', 
-            borderRadius: '12px', 
-            fontSize: '14px', 
-            fontWeight: '600', 
-            marginBottom: '24px', 
-            textAlign: 'center',
-            border: '1px solid rgba(239, 68, 68, 0.2)'
-          }}>
+          <div className="auth-error">
             {error}
           </div>
         )}
 
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-              <User size={20} />
-            </div>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="auth-input-group">
             <input
               type="text"
               name="identifier"
               required
-              style={{
-                width: '100%',
-                padding: '14px 16px 14px 48px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px',
-                color: 'white',
-                fontSize: '15px',
-                outline: 'none',
-                transition: 'all 0.2s'
-              }}
+              className="auth-input"
               placeholder="Username or Email"
               value={formData.identifier}
               onChange={handleChange}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(255,255,255,0.1)';
-                e.target.style.borderColor = 'var(--sky-500)';
-                e.target.parentElement.firstChild.style.color = 'var(--sky-500)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(255,255,255,0.05)';
-                e.target.style.borderColor = 'rgba(255,255,255,0.1)';
-                e.target.parentElement.firstChild.style.color = 'var(--text-muted)';
-              }}
             />
+            <div className="auth-input-icon">
+              <User size={20} />
+            </div>
           </div>
 
-          <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-              <Lock size={20} />
-            </div>
+          <div className="auth-input-group">
             <input
               type="password"
               name="password"
               required
-              style={{
-                width: '100%',
-                padding: '14px 16px 14px 48px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px',
-                color: 'white',
-                fontSize: '15px',
-                outline: 'none',
-                transition: 'all 0.2s'
-              }}
+              className="auth-input"
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              onFocus={(e) => {
-                e.target.style.background = 'rgba(255,255,255,0.1)';
-                e.target.style.borderColor = 'var(--sky-500)';
-                e.target.parentElement.firstChild.style.color = 'var(--sky-500)';
-              }}
-              onBlur={(e) => {
-                e.target.style.background = 'rgba(255,255,255,0.05)';
-                e.target.style.borderColor = 'rgba(255,255,255,0.1)';
-                e.target.parentElement.firstChild.style.color = 'var(--text-muted)';
-              }}
             />
+            <div className="auth-input-icon">
+              <Lock size={20} />
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: '100%',
-              padding: '16px',
-              borderRadius: '16px',
-              background: 'var(--sky-500)',
-              color: 'white',
-              fontSize: '16px',
-              fontWeight: '700',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              marginTop: '12px',
-              boxShadow: '0 4px 12px rgba(14, 165, 233, 0.3)'
-            }}
-            onMouseOver={(e) => e.target.style.background = 'var(--sky-600)'}
-            onMouseOut={(e) => e.target.style.background = 'var(--sky-500)'}
+            className="auth-submit-btn"
           >
             {loading ? 'Logging in...' : 'Sign In'}
           </button>
         </form>
 
-        <div style={{ marginTop: '32px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+        <div className="auth-footer">
+          <p>
             New to the app?{' '}
-            <Link 
-              to="/register" 
-              style={{ 
-                color: 'var(--sky-500)', 
-                fontWeight: '700', 
-                textDecoration: 'none',
-                marginLeft: '4px'
-              }}
-            >
+            <Link to="/register" className="auth-link">
               Create Account
             </Link>
           </p>
