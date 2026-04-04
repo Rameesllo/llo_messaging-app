@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Trash2, Check, Smile, Heart, ThumbsUp, Laugh, Frown, Play, Pause, Mic, X, Phone, PhoneOff, Video, VideoOff } from 'lucide-react';
+import { Trash2, Check, Smile, Heart, ThumbsUp, Laugh, Frown, Play, Pause, Mic, X, Phone, PhoneOff, Video, VideoOff, ChevronDown } from 'lucide-react';
 import { messageAPI } from '../services/api';
 import { emitReaction, emitDeleteMessage } from '../services/socket';
 
@@ -358,9 +358,9 @@ const MessageBubble = ({ message, isOwn, userId }) => {
           <button 
             onClick={() => setShowDeleteActions(!showDeleteActions)}
             className={`message-action-btn delete-trigger-btn ${showDeleteActions ? 'active' : ''}`}
-            title="Delete"
+            title="Options"
           >
-            <Trash2 size={16} />
+            <ChevronDown size={18} />
           </button>
         )}
 
@@ -370,8 +370,8 @@ const MessageBubble = ({ message, isOwn, userId }) => {
               onClick={() => handleDelete('me')}
               className="delete-menu-btn"
             >
-              <Trash2 size={14} />
-              Delete for me
+              <Trash2 size={14} className="text-muted" />
+              <span>Delete for me</span>
             </button>
             {isOwn && (
               <button 
@@ -379,7 +379,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
                 className="delete-menu-btn danger"
               >
                 <Trash2 size={14} />
-                Delete for everyone
+                <span>Delete for everyone</span>
               </button>
             )}
           </div>

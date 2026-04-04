@@ -1449,6 +1449,97 @@ body {
   max-height: 80%;
 }
 
+/* WhatsApp Style Message Deletion */
+.message-action-btn {
+  position: absolute;
+  top: -12px;
+  background: var(--bg-paper);
+  border: 1px solid var(--border-color);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.message-bubble:hover .message-action-btn {
+  opacity: 1;
+}
+
+.message-action-btn:hover {
+  background: var(--bg-input);
+  color: var(--sky-500);
+  transform: translateY(-2px);
+}
+
+.reaction-trigger-btn {
+  right: 48px;
+}
+
+.delete-trigger-btn {
+  right: 12px;
+}
+
+.delete-menu-container {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  width: 180px;
+  background: var(--bg-paper);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 100;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  animation: deleteMenuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.message-bubble-wrapper.other .delete-menu-container {
+  left: 0;
+  right: auto;
+}
+
+@keyframes deleteMenuPop {
+  from { opacity: 0; transform: scale(0.8) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.delete-menu-btn {
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.delete-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.delete-menu-btn.danger {
+  color: var(--red-500);
+}
+
+.delete-menu-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
 /* Loading Screen */
 .loading-screen {
   position: fixed;
