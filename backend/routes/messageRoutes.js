@@ -12,5 +12,6 @@ router.put('/viewed/:messageId', authMiddleware, messageController.markViewed);
 
 router.delete('/delete/:messageId', authMiddleware, messageController.deleteMessage);
 router.delete('/cleanup/:otherUserId', authMiddleware, messageController.cleanupMessages);
+router.delete('/all/:chatId', authMiddleware, messageController.deleteAllMessages);
 
 module.exports = router;

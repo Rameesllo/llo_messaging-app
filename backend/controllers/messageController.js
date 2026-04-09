@@ -91,10 +91,7 @@ exports.getMessages = async (req, res) => {
       };
     }
 
-    const messages = await Message.find({
-      ...query,
-      $nor: [{ isViewOnce: true, read: true }]
-    }).sort({ createdAt: 1 });
+    const messages = await Message.find(query).sort({ createdAt: 1 });
 
     res.json(messages);
   } catch (err) {
@@ -127,9 +124,7 @@ exports.getConversations = async (req, res) => {
           $or: [
             { senderId: userId, receiverId: otherUserId },
             { senderId: otherUserId, receiverId: userId }
-          ],
-          // Filter out viewed LLOs so they don't reappear on refresh
-          $nor: [{ isViewOnce: true, read: true }]
+          ]
         });
 
         if (!hasMessages) continue;
@@ -189,11 +184,11 @@ exports.cleanupMessages = async (req, res) => {
     const { otherUserId } = req.params;
     const userId = req.user.id;
 
-    // Physically delete all messages that have been read in this chat
+    // Refined cleanup: Only physically delete if readAt is older than 24 hours
     const messagesToDelete = await Message.find({
       $or: [
-        { senderId: otherUserId, receiverId: userId, read: true },
-        { senderId: userId, receiverId: otherUserId, read: true }
+        { senderId: otherUserId, receiverId: userId, read: true, readAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+        { senderId: userId, receiverId: otherUserId, read: true, readAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
       ]
     });
 
@@ -211,6 +206,49 @@ exports.cleanupMessages = async (req, res) => {
     res.json({ message: 'Chat cleaned up' });
   } catch (err) {
     console.error('Cleanup messages error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.deleteAllMessages = async (req, res) => {
+  try {
+    const { chatId } = req.params; // Can be otherUserId or groupId
+    const userId = req.user.id;
+
+    // Check if chatId is a group
+    const Group = require('../models/Group');
+    const isGroup = await Group.exists({ _id: chatId });
+
+    let query;
+    if (isGroup) {
+      query = { groupId: chatId };
+    } else {
+      query = {
+        $or: [
+          { senderId: userId, receiverId: chatId },
+          { senderId: chatId, receiverId: userId }
+        ]
+      };
+    }
+
+    const messages = await Message.find(query);
+    
+    // Delete all media from Cloudinary
+    for (const msg of messages) {
+      if (msg.publicId) {
+        try {
+          await cloudinary.uploader.destroy(msg.publicId, { 
+            resource_type: msg.mediaType === 'audio' ? 'video' : msg.mediaType 
+          });
+        } catch (e) {}
+      }
+    }
+
+    await Message.deleteMany(query);
+    
+    res.json({ message: 'All messages deleted successfully' });
+  } catch (err) {
+    console.error('Delete all messages error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -258,8 +296,8 @@ exports.deleteMessage = async (req, res) => {
     const message = await Message.findById(messageId);
     if (!message) return res.status(404).json({ message: 'Message already gone or not found' });
 
-    if (type === 'everyone' || message.isViewOnce) {
-      // Physical deletion logic
+    if (type === 'everyone') {
+      // Physical deletion logic for 'Everyone'
       if (message.publicId) {
         try {
           await cloudinary.uploader.destroy(message.publicId, { 
@@ -271,7 +309,7 @@ exports.deleteMessage = async (req, res) => {
       }
 
       await Message.findByIdAndDelete(messageId);
-      console.log('LLO/Message physically deleted:', messageId);
+      console.log('Message physically deleted for everyone:', messageId);
       res.json({ message: 'Message permanently deleted', messageId });
     } else {
       // Delete for me - keep DB record but add to hidden list (standard behavior)

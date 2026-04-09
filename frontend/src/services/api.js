@@ -20,10 +20,9 @@ API.interceptors.response.use((response) => {
   return response;
 }, (error) => {
   if (error.response && error.response.status === 401) {
-    console.warn('Unauthorized request detected. Clearing token...');
+    console.warn('Unauthorized request detected. Redirecting to login...');
     localStorage.removeItem('token');
-    // Optional: reload to trigger App.jsx re-auth check
-    // window.location.reload(); 
+    window.location.href = '/login'; 
   }
   return Promise.reject(error);
 });
@@ -46,7 +45,8 @@ export const friendAPI = {
   sendRequest: (receiverId) => API.post('/friends/request', { receiverId }),
   acceptRequest: (requestId) => API.post('/friends/accept', { requestId }),
   getPending: () => API.get('/friends/pending'),
-  discover: () => API.get('/friends/discover')
+  discover: () => API.get('/friends/discover'),
+  unfriend: (userId) => API.delete(`/friends/unfriend/${userId}`)
 };
 
 export const messageAPI = {
@@ -57,13 +57,16 @@ export const messageAPI = {
   markViewed: (messageId) => API.put(`/messages/viewed/${messageId}`),
   toggleReaction: (messageId, emoji) => API.post(`/messages/react/${messageId}`, { emoji }),
   deleteMessage: (messageId, type) => API.delete(`/messages/delete/${messageId}`, { data: { type } }),
-  cleanupMessages: (otherUserId) => API.delete(`/messages/cleanup/${otherUserId}`)
+  cleanupMessages: (otherUserId) => API.delete(`/messages/cleanup/${otherUserId}`),
+  deleteAll: (chatId) => API.delete(`/messages/all/${chatId}`)
 };
 
 export const groupAPI = {
   create: (data) => API.post('/groups/create', data),
   getAll: () => API.get('/groups/all'),
-  addMember: (data) => API.post('/groups/add-member', data)
+  addMember: (data) => API.post('/groups/add-member', data),
+  leaveGroup: (groupId) => API.post(`/groups/leave/${groupId}`),
+  deleteGroup: (groupId) => API.delete(`/groups/${groupId}`)
 };
 
 export const mediaAPI = {

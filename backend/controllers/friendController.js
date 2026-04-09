@@ -153,3 +153,33 @@ exports.searchUsers = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.unfriend = async (req, res) => {
+  try {
+    const friendId = req.params.friendId || req.params.otherUserId;
+    const userId = req.user.id;
+
+    if (!friendId || friendId === 'undefined') {
+      return res.status(400).json({ message: 'Invalid friend ID provided' });
+    }
+
+    // Remove from both users' friends list
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(userId, { $pull: { friends: friendId } });
+    await User.findByIdAndUpdate(friendId, { $pull: { friends: userId } });
+
+    // Mark any related friend requests as rejected or just delete them
+    const FriendRequest = require('../models/FriendRequest');
+    await FriendRequest.deleteMany({
+      $or: [
+        { sender: userId, receiver: friendId },
+        { sender: friendId, receiver: userId }
+      ]
+    });
+
+    res.json({ message: 'Unfriended successfully' });
+  } catch (err) {
+    console.error('Unfriend error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

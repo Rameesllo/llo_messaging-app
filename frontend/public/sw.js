@@ -29,16 +29,41 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Don't cache socket.io or other external API requests
-  if (event.request.url.includes('socket.io') || 
-      event.request.url.includes('/api/') ||
-      !event.request.url.startsWith(self.location.origin)) {
+  const { url } = event.request;
+  
+  // Skip caching/intervention for development/internal modules
+  const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+  
+  if (
+    isLocal ||
+    url.includes('socket.io') || 
+    url.includes('/api/') ||
+    url.includes('/@vite/') || 
+    url.includes('/@react-refresh') ||
+    url.includes('node_modules') ||
+    !url.startsWith(self.location.origin)
+  ) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then(response => {
+        // If it's a valid response, maybe cache it (optional for v2 simplicity)
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache if network fails
+        return caches.match(event.request).then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // If neither works, must return a Response to avoid TypeError
+          return new Response('Network error occurred', {
+            status: 408,
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        });
+      })
   );
 });

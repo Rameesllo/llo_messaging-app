@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Search, User, LogOut, MessageSquare, Plus, Send, ArrowRight, UserPlus, Bell, Moon, Sun, Users, Compass, Mars, Venus, Calendar, Download } from 'lucide-react';
+import { Search, User, LogOut, MessageSquare, Plus, Send, ArrowRight, UserPlus, Bell, Moon, Sun, Users, Compass, Mars, Venus, Calendar, Download, Trash2 } from 'lucide-react';
 import { userAPI } from '../services/api';
 
-const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSelectChat, onSearchSelect, onOpenMutual, onLogout, onOpenProfile, onOpenAddFriend, onOpenRequests, onOpenCreateGroup, onOpenDiscover, discoverUsers = [], onSendRequest, canInstall, onInstall }) => {
+const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSelectChat, onSearchSelect, onOpenMutual, onLogout, onOpenProfile, onOpenAddFriend, onOpenRequests, onOpenCreateGroup, onOpenDiscover, discoverUsers = [], onSendRequest, canInstall, onInstall, onDeletePerson }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -132,7 +132,7 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
 
       <div className="sidebar-scroll-area">
         {isSearching ? (
-          <div>
+          <div className="search-results-section">
             <h3 className="sidebar-section-title">Add People</h3>
             {searchResults.map((result) => (
               <button key={result._id} onClick={() => { onSearchSelect(result); setSearchQuery(''); setIsSearching(false); }} className="sidebar-item">
@@ -144,29 +144,52 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
                 <Plus size={20} style={{ color: 'var(--sky-500)' }} />
               </button>
             ))}
+            {searchResults.length === 0 && <p className="sidebar-empty-p">No users found</p>}
           </div>
         ) : (
           <>
             {/* Active Chats & Friends */}
             {unifiedList.map((item) => (
-              <button key={item._id} onClick={() => item.isNew ? onSearchSelect(item.otherUser) : onSelectChat(item)} className="sidebar-item">
-                <div className="sidebar-item-avatar-wrapper">
-                   <img src={item.otherUser?.profilePicture} className="avatar avatar-md" alt="" />
-                  {item.otherUser?.online && <div className="online-indicator"></div>}
-                </div>
-                <div className="sidebar-item-info">
-                  <div className="sidebar-item-header">
-                    <h3 className={`sidebar-item-username ${item.unreadCount > 0 ? 'unread' : ''}`}>{item.otherUser?.username}</h3>
-                    <span className={`sidebar-item-time ${item.unreadCount > 0 ? 'unread' : ''}`}>{item.isNew ? '' : getRelativeTime(item.createdAt)}</span>
+              <div key={item._id} className="sidebar-item-container animate-in">
+                <button 
+                  onClick={() => item.isNew ? onSearchSelect(item.otherUser) : onSelectChat(item)} 
+                  className={`sidebar-item ${(!item.isNew && !item.isGroup && item.otherUser?._id === item.activeId) ? 'active' : ''}`}
+                >
+                  <div className="sidebar-item-avatar-wrapper">
+                    <img src={item.otherUser?.profilePicture} className="avatar avatar-md" alt="" />
+                    {item.otherUser?.online && <div className="online-indicator pulse-online"></div>}
                   </div>
-                  <div className="sidebar-item-preview-row">
-                    <p className={`sidebar-item-preview ${item.unreadCount > 0 ? 'unread' : ''}`}>{getStatusPreview(item)}</p>
-                    {item.unreadCount > 0 && (
-                      <span className="sidebar-unread-badge">{item.unreadCount}</span>
-                    )}
+                  <div className="sidebar-item-info">
+                    <div className="sidebar-item-header">
+                      <h3 className={`sidebar-item-username ${item.unreadCount > 0 ? 'unread' : ''}`}>{item.otherUser?.username}</h3>
+                      <span className={`sidebar-item-time ${item.unreadCount > 0 ? 'unread' : ''}`}>{item.isNew ? '' : getRelativeTime(item.createdAt)}</span>
+                    </div>
+                    <div className="sidebar-item-preview-row">
+                      <p className={`sidebar-item-preview ${item.unreadCount > 0 ? 'unread' : ''}`}>{getStatusPreview(item)}</p>
+                      {item.unreadCount > 0 && (
+                        <span className="sidebar-unread-badge">{item.unreadCount}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
+                {!item.isGroup && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const targetId = item.otherUser?._id || item.otherUser?.id;
+                      if (!targetId) return;
+                      
+                      if (window.confirm(`Delete ${item.otherUser?.username} and all messages?`)) {
+                        onDeletePerson(targetId);
+                      }
+                    }} 
+                    className="sidebar-delete-btn"
+                    title="Delete Connection"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
             ))}
 
             {/* Discover People Section */}

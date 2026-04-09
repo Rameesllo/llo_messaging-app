@@ -6,9 +6,15 @@ import AddFriendModal from '../components/AddFriendModal';
 import DiscoverUsers from '../components/DiscoverUsers';
 import PendingRequestsModal from '../components/PendingRequestsModal';
 import CreateGroupModal from '../components/CreateGroupModal';
+import MutualFriendsModal from '../components/MutualFriendsModal';
 import CallOverlay from '../components/CallOverlay';
 import { authAPI, messageAPI, userAPI, mediaAPI, friendAPI, groupAPI } from '../services/api';
-import { initiateSocket, subscribeToMessages, sendMessageSocket, subscribeToStatus, subscribeToTyping, subscribeToReactions, subscribeToDelete, subscribeToIncomingCall, subscribeToMessageStatus, emitMessageRead, emitMessageDelivered } from '../services/socket';
+import { 
+  initiateSocket, subscribeToMessages, sendMessageSocket, subscribeToStatus, 
+  subscribeToTyping, subscribeToReactions, subscribeToDelete, subscribeToIncomingCall, 
+  subscribeToMessageStatus, emitMessageRead, emitMessageDelivered,
+  emitClearChat, subscribeToClearChat
+} from '../services/socket';
 
 console.log('API Service debug - friendAPI keys:', Object.keys(friendAPI));
 
@@ -29,6 +35,7 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   const [activeCall, setActiveCall] = useState(null);
   const [toast, setToast] = useState(null);
   const activeChatRef = useRef(null);
+  const audioCtxRef = useRef(null);
 
   useEffect(() => {
     activeChatRef.current = activeChat;
@@ -50,18 +57,23 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
     const unsubMessages = subscribeToMessages(async (err, msg) => {
       if (msg) {
         const currentActive = activeChatRef.current;
-        const isFromActive = currentActive && (msg.senderId === currentActive._id || msg.groupId === currentActive._id);
-        const isToActive = currentActive && (msg.receiverId === currentActive._id);
+        const myId = (user.id || user._id)?.toString();
+        const msgSenderId = msg.senderId?.toString();
+        const msgReceiverId = msg.receiverId?.toString();
+        const msgGroupId = msg.groupId?.toString();
+        const activeId = currentActive?._id?.toString();
 
-        const myId = (user.id || user._id).toString();
-        const isMe = msg.senderId === myId;
+        const isFromActive = currentActive && (msgSenderId === activeId || msgGroupId === activeId);
+        const isToActive = currentActive && (msgReceiverId === activeId);
+
+        const isMe = msgSenderId === myId;
 
         if (isFromActive || isToActive) {
           setMessages(prev => {
             if (prev.some(m => m._id === msg._id)) return prev;
             return [...prev, msg];
           });
-          if (isFromActive && !msg.groupId) {
+          if (isFromActive && !msg.groupId && !msg.isViewOnce) {
             try {
               await messageAPI.markAsRead(msg.senderId);
             } catch (e) {
@@ -137,14 +149,23 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
       }));
       fetchConversations(); // Update sidebar preview
     });
-
-    const handleUnloadCleanup = () => {
-      if (activeChatRef.current && !activeChatRef.current.isGroup) {
-        messageAPI.cleanupMessages(activeChatRef.current._id).catch(() => {});
+    
+    const unsubClearChat = subscribeToClearChat((data) => {
+      // data: { chatId, isGroup, senderId }
+      if (activeChatRef.current && activeChatRef.current._id === data.chatId) {
+        setMessages([]);
       }
-    };
+      fetchConversations();
+      if (data.isGroup) fetchGroups();
+    });
 
-    window.addEventListener('beforeunload', handleUnloadCleanup);
+    // Removed automatic cleanup on refresh to support 24-hour persistence logic
+    // const handleUnloadCleanup = () => {
+    //   if (activeChatRef.current && !activeChatRef.current.isGroup && activeChatRef.current._id) {
+    //     messageAPI.cleanupMessages(activeChatRef.current._id).catch(() => {});
+    //   }
+    // };
+    // window.addEventListener('beforeunload', handleUnloadCleanup);
 
     const handleRefreshConversations = () => fetchConversations();
     window.addEventListener('refresh-conversations', handleRefreshConversations);
@@ -157,8 +178,9 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
       unsubDelete();
       unsubIncomingColl();
       unsubMessageStatus();
+      unsubClearChat();
       window.removeEventListener('message-deleted-locally', handleLocalDelete);
-      window.removeEventListener('beforeunload', handleUnloadCleanup);
+      // window.removeEventListener('beforeunload', handleUnloadCleanup);
       window.removeEventListener('refresh-conversations', handleRefreshConversations);
       handleRefreshConversations();
     };
@@ -170,7 +192,8 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
 
     // Acknowledge read for existing unread messages from this user
     const acknowledgeRead = async () => {
-      const unreadMessages = messages.filter(m => m.senderId === activeChat._id && !m.read);
+      // EXCLUDE isViewOnce messages from auto-read. They must only be read via markViewed
+      const unreadMessages = messages.filter(m => m.senderId === activeChat._id && !m.read && !m.isViewOnce);
       for (const msg of unreadMessages) {
         emitMessageRead({ messageId: msg._id, senderId: user.id || user._id });
       }
@@ -246,12 +269,12 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
 
   const updateOnlineStatus = (userId, isOnline) => {
     setConversations(prev => prev.map(conv => {
-      if (conv.otherUser && conv.otherUser._id === userId) {
+      if (conv.otherUser && conv.otherUser._id?.toString() === userId?.toString()) {
         return { ...conv, otherUser: { ...conv.otherUser, online: isOnline } };
       }
       return conv;
     }));
-    if (activeChat && activeChat._id === userId) {
+    if (activeChat && activeChat._id?.toString() === userId?.toString()) {
       setActiveChat(prev => ({ ...prev, online: isOnline }));
     }
   };
@@ -286,7 +309,7 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
 
   const handleSelectChatFromSearch = async (selectedUser) => {
     // Check if already friends
-    const isFriend = friends.some(f => (f._id || f.id) === selectedUser._id);
+    const isFriend = friends.some(f => (f._id?.toString() || f.id?.toString()) === selectedUser._id?.toString());
     if (isFriend) {
       setActiveChat(selectedUser);
       fetchMessages(selectedUser._id);
@@ -325,12 +348,25 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
     requestNotificationPermission();
   }, []);
 
+  const getAudioContext = () => {
+    if (!audioCtxRef.current) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        audioCtxRef.current = new AudioCtx();
+      }
+    }
+    return audioCtxRef.current;
+  };
+
   const playReceivedSound = () => {
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
       
-      const audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
@@ -346,8 +382,6 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
 
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.15);
-      
-      setTimeout(() => audioCtx.close(), 300);
     } catch (err) {
       console.log('Received sound skipped:', err);
     }
@@ -377,13 +411,12 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
 
   const playSentSound = () => {
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
       
-      const audioCtx = new AudioCtx();
-      
-      // Resume context (important for mobile Chrome/Safari)
-      audioCtx.resume();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
 
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
@@ -400,8 +433,6 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
 
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.12);
-      
-      setTimeout(() => audioCtx.close(), 300);
     } catch (err) {
       console.log('Sound feedback skipped:', err);
     }
@@ -410,9 +441,31 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   const handleSendMessage = async (text, mediaData, mediaType, isViewOnce = false) => {
     if (!activeChat) return;
 
+    // Create a temporary optimistic message
+    const tempId = 'temp-' + Date.now();
+    const optimisticMessage = {
+      _id: tempId,
+      senderId: (user.id || user._id).toString(),
+      receiverId: activeChat.isGroup ? null : activeChat._id,
+      groupId: activeChat.isGroup ? activeChat._id : null,
+      text,
+      mediaUrl: mediaData ? (typeof mediaData === 'string' ? mediaData : URL.createObjectURL(mediaData)) : '',
+      mediaType,
+      isViewOnce,
+      createdAt: new Date().toISOString(),
+      pending: true,
+      senderUsername: user.username,
+      senderProfilePicture: user.profilePicture
+    };
+
+    // Update UI immediately (Optimistic UI)
+    setMessages(prev => [...prev, optimisticMessage]);
+    playSentSound();
+
     try {
       let mediaUrl = '';
       let publicId = '';
+      
       if (mediaData) {
         setIsUploading(true);
         const uploadRes = await mediaAPI.upload({ file: mediaData, resourceType: mediaType });
@@ -431,20 +484,47 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
       };
       
       const res = await messageAPI.sendMessage(data);
-      const newMessage = { ...res.data, senderId: (user.id || user._id).toString() };
+      const serverMessage = { ...res.data, senderId: (user.id || user._id).toString() };
       
-      // Play sound immediately on successful send
-      playSentSound();
+      // Replace optimistic message with actual server message
+      setMessages(prev => prev.map(m => m._id === tempId ? serverMessage : m));
       
-      setMessages(prev => [...prev, newMessage]);
-      sendMessageSocket(newMessage);
+      sendMessageSocket(serverMessage);
       fetchConversations();
       if (activeChat.isGroup) fetchGroups();
     } catch (err) {
       console.error('Failed to send message:', err);
+      // Remove the failed message or show error state
+      setMessages(prev => prev.filter(m => m._id !== tempId));
       alert('Message sending failed. Please check your connection.');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteFullChat = async () => {
+    if (!activeChat) return;
+    try {
+      if (activeChat.isGroup) {
+        // Find if user is admin
+        const group = groups.find(g => g._id === activeChat._id);
+        if (group && group.admin._id === (user.id || user._id)) {
+           await groupAPI.deleteGroup(activeChat._id);
+        } else {
+           await groupAPI.leaveGroup(activeChat._id);
+        }
+        emitClearChat({ chatId: activeChat._id, isGroup: true, senderId: user.id || user._id });
+        fetchGroups();
+      } else {
+        await messageAPI.deleteAll(activeChat._id);
+        emitClearChat({ chatId: activeChat._id, isGroup: false, senderId: user.id || user._id });
+      }
+      setMessages([]);
+      fetchConversations();
+      setActiveChat(null);
+    } catch (err) {
+      console.error('Failed to delete chat:', err);
+      alert('Failed to delete conversation.');
     }
   };
 
@@ -495,6 +575,21 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
             fetchPendingCount();
             fetchDiscoverUsers();
           }}
+          onDeletePerson={async (friendId) => {
+            if (!friendId) return;
+            try {
+              await friendAPI.unfriend(friendId);
+              if (activeChat && activeChat._id === friendId) {
+                setActiveChat(null);
+              }
+              // Refresh everything
+              fetchConversations();
+              fetchFriends();
+              fetchDiscoverUsers();
+            } catch (err) {
+              console.error('Failed to delete person:', err);
+            }
+          }}
           canInstall={canInstall}
           onInstall={onInstall}
         />
@@ -506,6 +601,7 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
           user={user} 
           messages={messages || []}
           onSendMessage={handleSendMessage}
+          onDeleteChat={handleDeleteFullChat}
           isUploading={isUploading}
           isTyping={activeChat && typingUsers.has(activeChat._id)}
           onInitiateCall={(type) => {

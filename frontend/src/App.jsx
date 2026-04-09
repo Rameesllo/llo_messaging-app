@@ -29,6 +29,7 @@ function App() {
           setUser(res.data);
         } catch (err) {
           localStorage.removeItem('token');
+          setUser(null);
         }
       }
       setLoading(false);

@@ -5,13 +5,21 @@ let socket;
 export const initiateSocket = (userId) => {
   if (!socket) {
     const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    
+    console.log(`Connecting to socket at: ${BACKEND_URL}`);
     socket = io(BACKEND_URL);
+
+    socket.on('connect', () => {
+      console.log('Socket connected successfully:', socket.id);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err.message);
+    });
   }
   
   if (socket && userId) {
-    console.log(`Socket joining as user: ${userId}`);
-    socket.emit('join', userId);
+    console.log(`Socket emitting join for user: ${userId}`);
+    socket.emit('join', userId.toString());
   }
   return socket;
 };
@@ -143,6 +151,16 @@ export const subscribeToCallRejected = (cb) => {
   if (!socket) return () => {};
   socket.on('call-rejected', cb);
   return () => socket.off('call-rejected', cb);
+};
+
+export const emitClearChat = (data) => {
+  if (socket) socket.emit('clearChat', data);
+};
+
+export const subscribeToClearChat = (cb) => {
+  if (!socket) return () => {};
+  socket.on('chatCleared', cb);
+  return () => socket.off('chatCleared', cb);
 };
 
 export default socket;

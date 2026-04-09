@@ -8,7 +8,10 @@ import { Send, Image, MoreVertical, Phone, Video as VideoIcon, Camera, Smile, Mi
 import { compressImage } from '../utils/imageUtils';
 import { emitTyping, emitStopTyping } from '../services/socket';
 
-const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploading, isTyping, onInitiateCall, onBack }) => {
+const ChatWindow = ({ 
+  activeChat, user, messages = [], onSendMessage, onDeleteChat, 
+  isUploading, isTyping, onInitiateCall, onBack 
+}) => {
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showStickerPicker, setShowStickerPicker] = useState(false);
@@ -25,8 +28,10 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const emojiPickerRef = useRef(null);
   const stickerPickerRef = useRef(null);
+  const moreMenuRef = useRef(null);
 
   const stickers = [
     { id: '1', emoji: '😊', name: 'Happy' },
@@ -55,6 +60,9 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
       }
       if (stickerPickerRef.current && !stickerPickerRef.current.contains(event.target)) {
         setShowStickerPicker(false);
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
+        setShowMoreMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -90,7 +98,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
     
     if (!isCurrentlyTyping) {
       setIsCurrentlyTyping(true);
-      emitTyping({ receiverId: activeChat._id, senderId: (user.id || user._id) });
+      emitTyping({ receiverId: activeChat._id?.toString(), senderId: (user.id || user._id)?.toString() });
     }
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -100,14 +108,16 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
 
   const handleStopTyping = () => {
     setIsCurrentlyTyping(false);
-    emitStopTyping({ receiverId: activeChat._id, senderId: (user.id || user._id) });
+    emitStopTyping({ receiverId: activeChat._id?.toString(), senderId: (user.id || user._id)?.toString() });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
   };
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { 
+        audioBitsPerSecond: 128000 // Optimized for faster upload while keeping clear quality
+      });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -198,7 +208,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
   }
 
   return (
-    <div className="chat-window">
+    <div className="chat-window animate-in">
       <div className="chat-header">
         <div className="chat-header-info">
           <button 
@@ -228,7 +238,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
             <div className="auth-input-group">
               <input 
                 type="text" 
-                placeholder="Search messages..." 
+                placeholder="Search..." 
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -242,15 +252,65 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
               </button>
             </div>
           ) : (
-            <button className="icon-btn" onClick={() => setShowSearch(true)}><Search size={20} /></button>
-          )}
-          {!activeChat.isGroup && (
             <>
-              <button className="icon-btn" onClick={() => onInitiateCall('voice')}><Phone size={20} /></button>
-              <button className="icon-btn" onClick={() => onInitiateCall('video')}><VideoIcon size={20} /></button>
+              <button className="icon-btn" onClick={() => setShowSearch(true)} title="Search Messages">
+                <Search size={20} />
+              </button>
+              
+              {!activeChat.isGroup && (
+                <>
+                  <button className="icon-btn mobile-hidden" onClick={() => onInitiateCall('audio')} title="Audio Call">
+                    <Mic size={20} />
+                  </button>
+                  <button className="icon-btn mobile-hidden" onClick={() => onInitiateCall('video')} title="Video Call">
+                    <Camera size={20} />
+                  </button>
+                </>
+              )}
             </>
           )}
-          <button className="icon-btn"><MoreVertical size={20} /></button>
+
+          <div className="relative" ref={moreMenuRef}>
+            <button 
+              className={`icon-btn ${showMoreMenu ? 'text-sky-500' : ''}`} 
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              title="More Options"
+            >
+              <MoreVertical size={20} />
+            </button>
+            
+            {showMoreMenu && (
+              <div className="absolute right-0 mt-3 w-52 glass-effect premium-shadow rounded-2xl p-2 z-[100] animate-in filter-none overflow-hidden border border-white/10">
+                <button 
+                  className="w-full text-left flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl transition-colors text-red-500 font-semibold"
+                  onClick={() => {
+                    if (window.confirm(activeChat.isGroup ? 'Clear group history?' : 'Permanently delete this entire conversation for everyone?')) {
+                      onDeleteChat();
+                      setShowMoreMenu(false);
+                    }
+                  }}
+                >
+                  <Trash2 size={18} />
+                  {activeChat.isGroup ? 'Clear Group' : 'Delete Chat'}
+                </button>
+                
+                {activeChat.isGroup && (
+                  <button 
+                    className="w-full text-left flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl transition-colors text-amber-500"
+                    onClick={() => {
+                      if (window.confirm('Leave this group?')) {
+                        onDeleteChat();
+                        setShowMoreMenu(false);
+                      }
+                    }}
+                  >
+                    <LogOut size={18} />
+                    Leave Group
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -263,7 +323,8 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
           (filteredMessages || []).map((msg, idx) => {
             if (!msg) return null;
             const currentUserId = (user?.id || user?._id || '').toString();
-            return <MessageBubble key={idx} message={msg} isOwn={msg.senderId === currentUserId} userId={currentUserId} />;
+            const senderId = msg.senderId?.toString() || '';
+            return <MessageBubble key={msg._id || idx} message={msg} isOwn={senderId === currentUserId} userId={currentUserId} />;
           })
         )}
         {isTyping && (
@@ -280,7 +341,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
 
       <div className="input-area">
         {showEmojiPicker && (
-          <div ref={emojiPickerRef} className="emoji-picker-container">
+          <div ref={emojiPickerRef} className="emoji-picker-container glass-effect premium-shadow">
             <EmojiPicker 
               onEmojiClick={handleEmojiClick} 
               autoFocusSearch={false}
@@ -292,7 +353,7 @@ const ChatWindow = ({ activeChat, user, messages = [], onSendMessage, isUploadin
         )}
 
         {showStickerPicker && (
-          <div ref={stickerPickerRef} className="sticker-picker-overlay">
+          <div ref={stickerPickerRef} className="sticker-picker-container glass-effect premium-shadow">
             <div className="sticker-picker-header">
               <h3 className="sticker-picker-title">Stickers</h3>
               <button 

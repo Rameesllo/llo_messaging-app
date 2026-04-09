@@ -16,22 +16,29 @@ const socketHandler = (io) => {
     });
 
     socket.on('sendMessage', async (message) => {
+      console.log('Socket sendMessage received:', {
+        msgId: message._id,
+        sender: message.senderId,
+        receiver: message.receiverId,
+        group: message.groupId
+      });
+
       if (message.groupId) {
         const Group = require('../models/Group');
         const group = await Group.findById(message.groupId);
         if (group) {
           group.members.forEach(memberId => {
-            if (memberId.toString() !== message.senderId.toString()) {
+            if (memberId && memberId.toString() !== message.senderId?.toString()) {
               io.to(memberId.toString()).emit('receiveMessage', message);
             }
           });
         }
-      } else {
+      } else if (message.receiverId) {
         const receiverId = message.receiverId.toString();
+        console.log(`Routing message to receiver room: ${receiverId}`);
         io.to(receiverId).emit('receiveMessage', message);
-        
-        // If receiver is in their room (online), we can assume delivery if they are connected
-        // For a more robust system, we wait for a 'messageDelivered' ACK from the client.
+      } else {
+        console.warn('Socket sendMessage: No receiverId or groupId found in message');
       }
     });
 
@@ -103,6 +110,25 @@ const socketHandler = (io) => {
           io.to(data.receiverId.toString()).emit('messageDeleted', data);
           // Also emit to sender (other sessions)
           io.to(socket.userId || data.senderId).emit('messageDeleted', data);
+        }
+      }
+    });
+
+    socket.on('clearChat', async (data) => {
+      // data: { chatId, isGroup, senderId }
+      if (data.isGroup) {
+        const Group = require('../models/Group');
+        const group = await Group.findById(data.chatId);
+        if (group) {
+          group.members.forEach(memberId => {
+            io.to(memberId.toString()).emit('chatCleared', data);
+          });
+        }
+      } else {
+        io.to(data.chatId.toString()).emit('chatCleared', data);
+        // Also notify other sessions of the sender
+        if (data.senderId) {
+          io.to(data.senderId.toString()).emit('chatCleared', data);
         }
       }
     });

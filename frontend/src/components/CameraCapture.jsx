@@ -22,8 +22,7 @@ const FILTERS = [
   {
     id: 'flowercrown', name: 'Flower Crown', category: 'beauty', emoji: '🌸',
     cssFilter: 'brightness(1.08) contrast(0.94) saturate(1.15)',
-    overlay: (ctx, w, h) => {
-      const positions = arguments[3]; // Face positions from tracker
+    overlay: (ctx, w, h, positions) => {
       if (!positions || positions.length < 70) {
           // Fallback if no face detected
           return;
@@ -161,8 +160,7 @@ const FILTERS = [
   {
     id: 'hearts', name: 'Hearts', category: 'fun', emoji: '❤️',
     cssFilter: 'saturate(1.3) brightness(1.05)',
-    overlay: (ctx, w, h) => {
-      const hearts = ['❤️','💕','💗','💖','💝','💓'];
+    overlay: (ctx, w, h, positions) => {
       ctx.font = `${Math.round(w * 0.07)}px serif`;
       ctx.textBaseline = 'middle';
       const seed = Date.now() / 1200;
@@ -176,8 +174,7 @@ const FILTERS = [
   {
     id: 'stars', name: 'Stars', category: 'fun', emoji: '⭐',
     cssFilter: 'brightness(1.08) saturate(1.2)',
-    overlay: (ctx, w, h) => {
-      const stars = ['⭐','🌟','✨','💫'];
+    overlay: (ctx, w, h, positions) => {
       ctx.font = `${Math.round(w * 0.065)}px serif`;
       ctx.textBaseline = 'middle';
       const seed = Date.now() / 1500;
@@ -191,8 +188,7 @@ const FILTERS = [
   {
     id: 'crying', name: 'Crying Lens', category: 'fun', emoji: '😭',
     cssFilter: 'hue-rotate(200deg) brightness(1.1) saturate(0.85)',
-    overlay: (ctx, w, h) => {
-      // Teardrops cascading down
+    overlay: (ctx, w, h, positions) => {
       ctx.font = `${Math.round(w * 0.05)}px serif`;
       const tearsX = [0.35, 0.45, 0.55, 0.65];
       const seed = Date.now() / 600;
@@ -218,8 +214,7 @@ const FILTERS = [
   {
     id: 'bigeyes', name: 'Big Eyes', category: 'fun', emoji: '👁️',
     cssFilter: 'brightness(1.05) saturate(1.1)',
-    overlay: (ctx, w, h) => {
-      const positions = arguments[3];
+    overlay: (ctx, w, h, positions) => {
       if (!positions || positions.length < 70) return;
 
       const leftEye = positions[27];
@@ -243,8 +238,7 @@ const FILTERS = [
   {
     id: 'babyface', name: 'Baby Face', category: 'fun', emoji: '👶',
     cssFilter: 'brightness(1.12) saturate(1.35) contrast(0.9)',
-    overlay: (ctx, w, h) => {
-      const positions = arguments[3];
+    overlay: (ctx, w, h, positions) => {
       if (!positions || positions.length < 70) return;
 
       const leftCheek = positions[2];
@@ -379,23 +373,21 @@ const FILTERS = [
   {
     id: 'genderswap', name: 'Gender Swap', category: 'transform', emoji: '⚥',
     cssFilter: 'hue-rotate(320deg) saturate(1.4) brightness(1.06)',
-    overlay: (ctx, w, h) => {
-      ctx.font = `${Math.round(w * 0.07)}px serif`;
+    overlay: (ctx, w, h, positions) => {
       ctx.fillText('♀️', w * 0.82, h * 0.1);
     },
   },
   {
     id: 'oldage', name: 'Old Age', category: 'transform', emoji: '👴',
     cssFilter: 'grayscale(0.5) contrast(1.15) brightness(0.9) sepia(0.3)',
-    overlay: (ctx, w, h) => {
-      ctx.font = `${Math.round(w * 0.07)}px serif`;
+    overlay: (ctx, w, h, positions) => {
       ctx.fillText('👴', w * 0.78, h * 0.08);
     },
   },
   {
     id: 'facestretch', name: 'Face Stretch', category: 'transform', emoji: '🫠',
     cssFilter: 'brightness(1.02)',
-    overlay: (ctx, w, h) => {
+    overlay: (ctx, w, h, positions) => {
       ctx.font = `${Math.round(w * 0.07)}px serif`;
       ctx.fillText('🫠', w * 0.04, h * 0.08);
     },
@@ -403,16 +395,14 @@ const FILTERS = [
   {
     id: 'alien', name: 'Alien Face', category: 'transform', emoji: '👽',
     cssFilter: 'hue-rotate(120deg) saturate(1.6) brightness(1.1) contrast(1.2)',
-    overlay: (ctx, w, h) => {
-      ctx.font = `${Math.round(w * 0.1)}px serif`;
+    overlay: (ctx, w, h, positions) => {
       ctx.fillText('👽', w * 0.76, h * 0.08);
     },
   },
   {
     id: 'bigmouth', name: 'Big Mouth', category: 'transform', emoji: '😁',
     cssFilter: 'saturate(1.2) brightness(1.05)',
-    overlay: (ctx, w, h) => {
-      const positions = arguments[3];
+    overlay: (ctx, w, h, positions) => {
       if (!positions || positions.length < 70) return;
 
       const mouthCenter = positions[57];

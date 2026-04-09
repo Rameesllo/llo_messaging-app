@@ -5,6 +5,22 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
+    <!-- Service Worker Cleanup (Immediate) -->
+    <script>
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if ('serviceWorker' in navigator && isLocalhost) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          if (registrations.length > 0) {
+            for (let reg of registrations) {
+              reg.unregister();
+              console.log('SW unregistered on localhost');
+            }
+            window.location.reload();
+          }
+        });
+      }
+    </script>
+    
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0ea5e9" />
@@ -23,7 +39,8 @@
     
     <!-- Service Worker Registration -->
     <script>
-      if ('serviceWorker' in navigator) {
+      const isNotLocalhost = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      if ('serviceWorker' in navigator && isNotLocalhost) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
             .then(reg => console.log('Service Worker registered!'))

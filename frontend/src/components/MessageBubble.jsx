@@ -65,52 +65,67 @@ const MessageBubble = ({ message, isOwn, userId }) => {
   const handleOpenViewOnce = async () => {
     setIsOpened(true);
     
-    // Mark as read immediately on backend so it can't be opened again on refresh
+    // Mark as read immediately on backend so the timer starts
     try {
       await messageAPI.markViewed(message._id);
       window.dispatchEvent(new CustomEvent('refresh-conversations'));
     } catch (e) {
       console.error('Failed to mark LLO as read on open:', e);
     }
+  };
 
-    let count = 7; // Updated to 7 seconds per user request
-    setTimer(count);
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          handleDelete();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const getTimeRemaining = () => {
+    if (!message.readAt) return null;
+    const readAt = new Date(message.readAt);
+    const expiresAt = new Date(readAt.getTime() + 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const diff = expiresAt - now;
+    
+    if (diff <= 0) return null;
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
   };
 
   const handleManualClose = () => {
-    setTimer(0);
-    handleDelete();
+    setIsOpened(false);
   };
 
   const renderContent = () => {
     if (message.isViewOnce && !isOpened) {
-      if (message.read && !isOwn) {
-        // Receiver already opened this once
-        return (
-          <div className="llo-btn opened">
-             <div className="llo-icon-container">
-               <Check size={20} className="llo-icon" />
-             </div>
-             <div className="llo-text">
-               <div className="llo-label">LLO Opened</div>
-               <div className="llo-sub">Vanished</div>
-             </div>
-          </div>
-        );
+      if (message.read) {
+        // Shared logic for both sender and receiver once viewed
+        const remaining = getTimeRemaining();
+        if (remaining) {
+          return (
+            <button onClick={() => setIsOpened(true)} className="llo-btn persistent">
+               <div className="llo-icon-container">
+                 <Check size={20} className="llo-icon" />
+               </div>
+               <div className="llo-text">
+                 <div className="llo-label">LLO Opened</div>
+                 <div className="llo-sub">Expires in {remaining}</div>
+               </div>
+            </button>
+          );
+        } else if (message.readAt) {
+          // If expired but not yet deleted by DB TTL
+          return (
+            <div className="llo-btn opened">
+               <div className="llo-icon-container">
+                 <Check size={20} className="llo-icon" />
+               </div>
+               <div className="llo-text">
+                 <div className="llo-label">LLO Expired</div>
+                 <div className="llo-sub">Vanishing soon</div>
+               </div>
+            </div>
+          );
+        }
       }
 
       if (isOwn) {
-        // Sender sees a static "Sent LLO" bubble
         return (
           <div className="llo-btn sender-locked">
             <div className="llo-icon-container sender-locked-icon">
@@ -134,7 +149,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
           </div>
           <div className="llo-text">
             <div className="llo-label">LLO {message.mediaType}</div>
-            <div className="llo-sub">Click to view (7s)</div>
+            <div className="llo-sub">Click to watch (24h)</div>
           </div>
         </button>
       );
@@ -149,7 +164,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
                 <img src="/favicon.png" alt="LLO" className="llo-viewer-avatar" />
               </div>
               <div className="llo-viewer-meta">
-                <span className="llo-viewer-title">LLO {message.mediaType.toUpperCase()}</span>
+                <span className="llo-viewer-title">LLO {message.mediaType?.toUpperCase()}</span>
                 <span className="llo-viewer-subtitle">From {isOwn ? 'You' : 'Friend'}</span>
               </div>
             </div>
@@ -161,14 +176,16 @@ const MessageBubble = ({ message, isOwn, userId }) => {
             </button>
           </div>
           <div className="llo-timer-bar">
-            <div 
-              className="llo-timer-progress"
-              style={{ 
-                width: `${(timer / 7) * 100}%`, 
-                height: '100%',
-                transition: 'width 1s linear' 
-              }}
-            />
+            {message.readAt && (
+              <div 
+                className="llo-timer-progress"
+                style={{ 
+                  width: `${Math.max(0, ((new Date(message.readAt).getTime() + 24*60*60*1000 - Date.now()) / (24*60*60*1000)) * 100)}%`, 
+                  height: '100%',
+                  transition: 'width 1s linear' 
+                }}
+              />
+            )}
           </div>
         </div>
 
@@ -183,15 +200,15 @@ const MessageBubble = ({ message, isOwn, userId }) => {
             <video 
               src={message.mediaUrl} 
               autoPlay 
+              controls
               className="llo-viewer-media"
-              onEnded={handleManualClose} 
             />
           )}
         </div>
       </div>
     );
 
-    if (message.isViewOnce && isOpened && timer > 0) {
+    if (message.isViewOnce && isOpened) {
       return createPortal(ViewerOverlay, document.body);
     }
 
@@ -294,7 +311,7 @@ const MessageBubble = ({ message, isOwn, userId }) => {
   }
 
   return (
-    <div className={`message-bubble-wrapper ${isOwn ? 'own' : 'other'}`}>
+    <div className={`message-bubble-wrapper ${isOwn ? 'own' : 'other'} animate-in`}>
       <div 
         className={`message-bubble ${isOwn ? 'own' : 'other'} ${isStickerMode ? 'sticker-mode' : ''}`}
       >
