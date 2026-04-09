@@ -19,15 +19,17 @@ app.use((req, res, next) => {
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: true,
+    credentials: true,
     methods: ["GET", "POST"]
   }
 });
 
 app.use(cors({
-  origin: "*",
+  origin: true,
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
 
