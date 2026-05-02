@@ -47,7 +47,11 @@ exports.login = async (req, res) => {
     const { identifier, password } = req.body; // identifier can be email or username
 
     const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }]
+      $or: [
+        { email: identifier }, 
+        { username: identifier },
+        { phoneNumber: identifier }
+      ]
     });
 
     if (!user) {

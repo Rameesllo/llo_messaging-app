@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, User, LogOut, MessageSquare, Plus, Send, ArrowRight, UserPlus, Bell, Moon, Sun, Users, Compass, Mars, Venus, Calendar, Download, Trash2 } from 'lucide-react';
-import { userAPI } from '../services/api';
+import { userAPI, friendAPI } from '../services/api';
 
 const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSelectChat, onSearchSelect, onOpenMutual, onLogout, onOpenProfile, onOpenAddFriend, onOpenRequests, onOpenCreateGroup, onOpenDiscover, discoverUsers = [], onSendRequest, canInstall, onInstall, onDeletePerson }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -10,13 +10,20 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
   const handleSearch = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    if (query.length > 1) {
+    
+    if (query.trim().length > 0) {
       setIsSearching(true);
-      try {
-        const { data } = await userAPI.search(query);
-        setSearchResults(data);
-      } catch (err) {
-        console.error('Search error:', err);
+      
+      // Global search only if query > 1
+      if (query.length > 1) {
+        try {
+          const { data } = await friendAPI.search(query);
+          setSearchResults(data);
+        } catch (err) {
+          console.error('Search error:', err);
+        }
+      } else {
+        setSearchResults([]);
       }
     } else {
       setIsSearching(false);
@@ -126,14 +133,14 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
         </div>
         <div className="search-input-wrapper">
           <Search size={18} className="sidebar-search-icon" />
-          <input type="text" placeholder="Search contacts" className="search-input" value={searchQuery} onChange={handleSearch} />
+          <input type="text" placeholder="Search people or messages" className="search-input" value={searchQuery} onChange={handleSearch} />
         </div>
       </div>
 
       <div className="sidebar-scroll-area">
         {isSearching ? (
           <div className="search-results-section">
-            <h3 className="sidebar-section-title">Add People</h3>
+            <h3 className="sidebar-section-title">Global Search</h3>
             {searchResults.map((result) => (
               <button key={result._id} onClick={() => { onSearchSelect(result); setSearchQuery(''); setIsSearching(false); }} className="sidebar-item">
                 <img src={result.profilePicture} className="avatar avatar-md" alt="" />
@@ -149,7 +156,12 @@ const Sidebar = ({ user, conversations, friends, groups = [], pendingCount, onSe
         ) : (
           <>
             {/* Active Chats & Friends */}
-            {unifiedList.map((item) => (
+            {unifiedList
+              .filter(item => 
+                item.otherUser?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.lastMessage?.text?.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((item) => (
               <div key={item._id} className="sidebar-item-container animate-in">
                 <button 
                   onClick={() => item.isNew ? onSearchSelect(item.otherUser) : onSelectChat(item)} 

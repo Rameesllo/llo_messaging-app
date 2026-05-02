@@ -57,6 +57,8 @@ body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   overflow: hidden;
+  height: 100%;
+  width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -191,12 +193,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding: 40px 20px;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
   background-size: 400% 400%;
   animation: auth-gradient 15s ease infinite;
-  padding: 20px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -940,7 +943,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  padding: 20px;
+  padding: 60px 20px;
   z-index: 100;
   background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
 }
@@ -1315,9 +1318,10 @@ body {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: 40px 20px;
+  overflow-y: auto;
 }
 
 .modal-container {

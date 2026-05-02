@@ -10,7 +10,7 @@ import { emitTyping, emitStopTyping } from '../services/socket';
 
 const ChatWindow = ({ 
   activeChat, user, messages = [], onSendMessage, onDeleteChat, 
-  isUploading, isTyping, onInitiateCall, onBack 
+  isUploading, isTyping, onInitiateCall, onBack, isLoading
 }) => {
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -315,7 +315,14 @@ const ChatWindow = ({
       </div>
 
       <div className="messages-area scrollbar-hide">
-        {(filteredMessages || []).length === 0 ? (
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-4">
+               <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin"></div>
+               <p className="text-slate-400 text-sm animate-pulse">Loading conversation...</p>
+            </div>
+          </div>
+        ) : (filteredMessages || []).length === 0 ? (
           <div className="sidebar-empty-state">
             <p>{searchQuery ? 'No messages matching your search' : 'No messages yet. Say hello!'}</p>
           </div>

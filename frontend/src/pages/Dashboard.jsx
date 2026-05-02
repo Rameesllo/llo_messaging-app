@@ -34,6 +34,7 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [activeCall, setActiveCall] = useState(null);
   const [toast, setToast] = useState(null);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const activeChatRef = useRef(null);
   const audioCtxRef = useRef(null);
 
@@ -328,11 +329,14 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
   };
 
   const fetchMessages = async (otherUserId) => {
+    setIsMessagesLoading(true);
     try {
       const res = await messageAPI.getMessages(otherUserId);
       setMessages(res.data);
     } catch (err) {
       console.error('Failed to fetch messages', err);
+    } finally {
+      setIsMessagesLoading(false);
     }
   };
 
@@ -600,6 +604,7 @@ const Dashboard = ({ user, setUser, canInstall, onInstall }) => {
           activeChat={activeChat} 
           user={user} 
           messages={messages || []}
+          isLoading={isMessagesLoading}
           onSendMessage={handleSendMessage}
           onDeleteChat={handleDeleteFullChat}
           isUploading={isUploading}

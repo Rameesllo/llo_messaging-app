@@ -14,8 +14,12 @@ const MessageBubble = ({ message, isOwn, userId }) => {
   const deleteActionsRef = React.useRef(null);
 
   const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+    if (!timestamp) return '';
+    return new Intl.DateTimeFormat('default', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    }).format(new Date(timestamp));
   };
 
   const isOnlyEmoji = (str) => {
